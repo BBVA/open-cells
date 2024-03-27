@@ -1,0 +1,30 @@
+## editors
+/.idea
+/.vscode
+
+## system files
+.DS_Store
+.wireit
+
+## code coverage folders
+coverage/
+
+## npm
+node_modules
+npm-debug.log
+yarn-error.log
+
+## temp folders
+/.tmp/
+
+## we prefer package-lock.json
+yarn.lock
+
+## build output
+dist
+build-stats.json
+stats.html
+.rpt2_cache
+
+## browserstack
+local.log

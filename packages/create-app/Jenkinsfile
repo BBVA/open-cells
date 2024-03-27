@@ -1,0 +1,35 @@
+#!groovy
+
+@Library("workflowlibs") _
+
+pipeline {
+
+    agent none
+    parameters {
+        file(description: 'Ether Configuration', name: 'etherConfig')
+    }
+    stages {
+        stage('Checkout Global Library') {
+            steps {
+                script{
+                    globalBootstrap {
+                        libraryName   = "cellsworkflowlibs"
+                        libraryBranch = "master"
+
+                        entrypointParams = [
+                            type                  : "npm",
+                            lint                  : false,
+                            sonarQube             : false,
+                            test                  : false,
+                            publish               : true,
+                            branches2Publish      : ["master"],
+                            cellsConfig           : [
+                                                     cellsRelease : true
+                                                    ]
+                        ]
+                    }
+                }
+            }
+        }
+    }
+}
