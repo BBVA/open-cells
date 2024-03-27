@@ -1,0 +1,36 @@
+{
+  "name": "open-cells",
+  "version": "1.0.0",
+  "private": true,
+  "description": "",
+  "license": "Apache-2.0",
+  "author": "",
+  "main": "index.js",
+  "scripts": {
+    "build": "wireit",
+    "create:preview": "cd ./packages/example && node ../create-app/src/create.js "
+  },
+  "keywords": [],
+  "devDependencies": {
+    "@playwright/test": "^1.41.2",
+    "@types/node": "^20.11.16",
+    "@typescript-eslint/parser": "^6.15.0",
+    "eslint-plugin-prettier": "^5.1.0",
+    "prettier": "^3.0.0",
+    "prettier-plugin-jsdoc": "^1.0.0",
+    "wireit": "^0.14.1"
+  },
+  "wireit": {
+    "build": {
+      "dependencies": [
+        "./packages/core:build",
+        "./packages/element-controller:build",
+        "./packages/page-controller:build"
+      ]
+    }
+  },
+  "workspaces": [
+    "packages/*",
+    "packages/example/*"
+  ]
+}
