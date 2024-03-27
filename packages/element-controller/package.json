@@ -1,0 +1,19 @@
+{
+  "name": "@open-cells/element-controller",
+  "version": "1.0.0",
+  "main": "index.js",
+  "scripts": {
+    "build": "echo \"Building element...\""
+  },
+  "keywords": [],
+  "author": "",
+  "license": "Apache-2.0",
+  "description": "",
+  "dependencies": {
+    "@open-cells/core": "^1.0.0"
+  },
+  "files": [
+    "/src/",
+    "*.js"
+  ]
+}
