@@ -1,0 +1,1 @@
+export type PostMessageEvent = CustomEvent & { event: string };

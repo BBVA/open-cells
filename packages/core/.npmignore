@@ -1,0 +1,9 @@
+gulpfile.js,
+webpack.config.js,
+karma.conf.js,
+test,
+coverage,
+util,
+tasks,
+coverage-reports,
+Jenkinsfile

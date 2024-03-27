@@ -1,0 +1,48 @@
+{
+  "name": "@open-cells/core",
+  "version": "1.0.0",
+  "description": "Open Cells Core",
+  "type": "module",
+  "main": "src/index.js",
+  "engines": {
+    "node": ">=16.0.0"
+  },
+  "scripts": {
+    "build": "rollup -c",
+    "lint": "echo \"lint\"",
+    "prepublish": "npm run --unsafe-perm build",
+    "test": "web-test-runner",
+    "typchk": "tsc -p ./tsconfig-typchk.json --noEmit",
+    "type-check": "tsc --project tsconfig-typchk.json",
+    "unit-test": "npm run type-check && npm run test",
+    "postinstall": "npx playwright install"
+  },
+  "files": [
+    "src/**/*"
+  ],
+  "keywords": [
+    "core",
+    "webcomponents"
+  ],
+  "dependencies": {
+    "rxjs": "8.0.0-alpha.12"
+  },
+  "devDependencies": {
+    "@babel/core": "^7.23.0",
+    "@babel/preset-env": "^7.22.20",
+    "@esm-bundle/chai": "^4.3.4-fix.0",
+    "@rollup/plugin-commonjs": "^25.0.7",
+    "@rollup/plugin-node-resolve": "^15.2.3",
+    "@rollup/plugin-terser": "^0.4.3",
+    "@web/test-runner": "^0.18.0",
+    "@web/test-runner-playwright": "^0.11.0",
+    "eslint": "^8.56.0",
+    "playwright": "^1.42.1",
+    "rollup": "^3.29.4",
+    "rollup-plugin-node-polyfills": "^0.2.1",
+    "sinon": "^17.0.1"
+  },
+  "directories": {
+    "test": "test"
+  }
+}

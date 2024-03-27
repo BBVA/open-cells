@@ -1,0 +1,12 @@
+.DS_Store
+.vscode
+.history
+npm-debug.log
+coverage
+components
+coverage-reports
+node_modules
+build
+dist
+package-lock.json
+
