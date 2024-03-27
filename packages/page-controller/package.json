@@ -1,0 +1,19 @@
+{
+  "name": "@open-cells/page-controller",
+  "version": "1.0.0",
+  "scripts": {
+    "build": "echo \"Building page...\""
+  },
+  "keywords": [],
+  "author": "",
+  "license": "Apache-2.0",
+  "files": [
+    "/src/",
+    "*.js"
+  ],
+  "main": "index.js",
+  "dependencies": {
+    "@open-cells/element-controller": "^1.0.0"
+  },
+  "description": ""
+}
