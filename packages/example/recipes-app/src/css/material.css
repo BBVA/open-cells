@@ -1,0 +1,49 @@
+html {
+  /* list */
+  --md-list-item-label-text-color: var(--primary);
+
+  /* button */
+  --md-outlined-button-label-text-color: var(--primary);
+  --md-outlined-button-focus-label-text-color: var(--on-surface-variant);
+  --md-outlined-button-hover-label-text-color: var(--on-surface-variant);
+  --md-outlined-button-pressed-label-text-color: var(--on-surface-variant);
+
+  --md-outlined-button-hover-state-layer-color: var(--surface-container-highest);
+  --md-outlined-button-pressed-state-layer-color: var(--surface-container-highest);
+  --md-outlined-button-hover-state-layer-opacity: 1;
+
+  --md-outlined-button-outline-color: var(--outline);
+  --md-outlined-button-pressed-outline-color: var(--on-surface-variant);
+
+  --md-outlined-button-icon-color: var(--primary);
+  --md-outlined-button-focus-icon-color: var(--on-surface-variant);
+  --md-outlined-button-hover-icon-color: var(--on-surface-variant);
+  --md-outlined-button-pressed-icon-color: var(--on-surface-variant);
+
+  /* icon-button */
+  --md-outlined-icon-button-hover-state-layer-color: var(--surface-container-highest);
+  --md-outlined-icon-button-pressed-state-layer-color: var(--surface-container-highest);
+
+  --md-outlined-icon-button-outline-color: var(--outline);
+  --md-outlined-icon-button-pressed-outline-color: var(--on-surface-variant);
+
+  --md-outlined-icon-button-icon-color: var(--primary);
+  --md-outlined-icon-button-focus-icon-color: var(--on-surface-variant);
+  --md-outlined-icon-button-hover-icon-color: var(--on-surface-variant);
+  --md-outlined-icon-button-pressed-icon-color: var(--on-surface-variant);
+
+  --md-outlined-icon-button-selected-hover-icon-color: var(--on-surface-variant);
+  --md-outlined-icon-button-selected-icon-color: var(--on-surface-variant);
+  --md-outlined-icon-button-selected-container-color: var(--surface-container-highest);
+  --md-outlined-icon-button-selected-focus-icon-color: var(--on-surface-variant);
+  --md-outlined-icon-button-selected-pressed-icon-color: var(--on-surface-variant);
+
+  /* progress */
+  --md-circular-progress-active-indicator-color: var(--primary);
+}
+
+md-outlined-icon-button[selected] {
+  border: 1px solid var(--on-surface-variant);
+  border-radius: 100%;
+  box-sizing: border-box;
+}
