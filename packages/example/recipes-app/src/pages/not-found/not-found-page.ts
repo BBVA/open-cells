@@ -1,12 +1,13 @@
 import { html, LitElement } from 'lit';
 import { PageController } from '@open-cells/page-controller';
+import { PageTransitionsMixin } from '@open-cells/page-transitions';
 import { customElement, state } from 'lit/decorators.js';
 import '@material/web/button/outlined-button.js';
 import '@material/web/icon/icon.js';
 import '../../components/page-layout.js';
 
 @customElement('not-found-page')
-export class NotFoundPage extends LitElement {
+export class NotFoundPage extends PageTransitionsMixin(LitElement) {
   pageController = new PageController(this);
 
   @state()
@@ -42,6 +43,6 @@ export class NotFoundPage extends LitElement {
   }
 
   onPageLeave() {
-    this._layout.resetScroll()
+    this._layout.resetScroll();
   }
 }

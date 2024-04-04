@@ -1,5 +1,6 @@
 import { html, LitElement, nothing } from 'lit';
 import { PageController } from '@open-cells/page-controller';
+import { PageTransitionsMixin } from '@open-cells/page-transitions';
 import { customElement, state } from 'lit/decorators.js';
 import { map } from 'lit/directives/map.js';
 import { getRandomMeal, getAllCategories } from '../../components/meals.js';
@@ -12,7 +13,7 @@ import '@material/web/list/list.js';
 import '../../components/page-layout.js';
 
 @customElement('home-page')
-export class HomePage extends LitElement {
+export class HomePage extends PageTransitionsMixin(LitElement) {
   pageController = new PageController(this);
 
   protected createRenderRoot(): HTMLElement | DocumentFragment {
@@ -205,6 +206,6 @@ export class HomePage extends LitElement {
   }
 
   onPageLeave() {
-    this._layout.resetScroll()
+    this._layout.resetScroll();
   }
 }

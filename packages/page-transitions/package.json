@@ -1,0 +1,21 @@
+{
+  "name": "@open-cells/page-transitions",
+  "version": "1.0.0-rc.1",
+  "description": "",
+  "keywords": [],
+  "exports": {
+    ".": "./index.js",
+    "./page-transition-head-styles.js": "./page-transition-head-styles.js"
+  },
+  "main": "index.js",
+  "type": "module",
+  "license": "Apache-2.0",
+  "files": [
+    "/src/",
+    "*.js"
+  ],
+  "dependencies": {
+    "lit": "^3.0.0",
+    "@open-wc/dedupe-mixin": "^1.4.0"
+  }
+}

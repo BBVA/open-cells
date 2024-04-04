@@ -18,6 +18,7 @@
     "@open-cells/core": "^1.0.0",
     "@open-cells/element-controller": "^1.0.0",
     "@open-cells/page-controller": "^1.0.0",
+    "@open-cells/page-transitions": "^1.0.0-rc.1",
     "lit": "^3.0.0"
   },
   "devDependencies": {

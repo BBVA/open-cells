@@ -1,5 +1,6 @@
 import { html, LitElement, nothing } from 'lit';
 import { PageController } from '@open-cells/page-controller';
+import { PageTransitionsMixin } from '@open-cells/page-transitions';
 import { customElement, state, property } from 'lit/decorators.js';
 import { getAllCategories, getMealsByCategory, getMealDetailsById } from '../../components/meals.js';
 import '@material/web/button/outlined-button.js';
@@ -9,7 +10,7 @@ import '@material/web/progress/circular-progress.js';
 import '../../components/page-layout.js';
 
 @customElement('category-page')
-export class CategoryPage extends LitElement {
+export class CategoryPage extends PageTransitionsMixin(LitElement) {
   pageController = new PageController(this);
 
   protected createRenderRoot(): HTMLElement | DocumentFragment {

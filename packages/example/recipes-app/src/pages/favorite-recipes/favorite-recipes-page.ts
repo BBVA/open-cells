@@ -1,5 +1,6 @@
 import { html, LitElement, PropertyValueMap } from 'lit';
 import { PageController } from '@open-cells/page-controller';
+import { PageTransitionsMixin } from '@open-cells/page-transitions';
 import { customElement, state } from 'lit/decorators.js';
 import '@material/web/button/outlined-button.js';
 import '@material/web/icon/icon.js';
@@ -8,7 +9,7 @@ import '@material/web/progress/circular-progress.js';
 import '../../components/page-layout.js';
 
 @customElement('favorite-recipes-page')
-export class FavoriteRecipesPage extends LitElement {
+export class FavoriteRecipesPage extends PageTransitionsMixin(LitElement) {
   pageController = new PageController(this);
 
   protected createRenderRoot(): HTMLElement | DocumentFragment {

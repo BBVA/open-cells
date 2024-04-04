@@ -1,5 +1,6 @@
 import { html, LitElement, nothing } from 'lit';
 import { PageController } from '@open-cells/page-controller';
+import { PageTransitionsMixin } from '@open-cells/page-transitions';
 import { customElement, state, property } from 'lit/decorators.js';
 import { getMealDetailsById } from '../../components/meals.js';
 import '@material/web/button/outlined-button.js';
@@ -9,7 +10,7 @@ import '@material/web/progress/circular-progress.js';
 import '../../components/page-layout.js';
 
 @customElement('recipe-page')
-export class RecipePage extends LitElement {
+export class RecipePage extends PageTransitionsMixin(LitElement) {
   pageController = new PageController(this);
 
   protected createRenderRoot(): HTMLElement | DocumentFragment {
@@ -196,9 +197,7 @@ export class RecipePage extends LitElement {
   }
 
   _addLikedRecipes(ev, recipe) {
-    ev.target.selected
-      ? this._likedRecipes.add(recipe)
-      : this._delete(recipe, this._likedRecipes);
+    ev.target.selected ? this._likedRecipes.add(recipe) : this._delete(recipe, this._likedRecipes);
 
     this.pageController.publish('liked-recipes', this._likedRecipes);
     this.requestUpdate();
@@ -213,6 +212,6 @@ export class RecipePage extends LitElement {
   }
 
   onPageLeave() {
-    this._layout.resetScroll()
+    this._layout.resetScroll();
   }
 }

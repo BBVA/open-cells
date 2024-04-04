@@ -6,6 +6,7 @@ import { routes } from '../router/routes.js';
 import { styles } from './app-index.css.js';
 import '@material/web/icon/icon.js';
 import '@material/web/iconbutton/outlined-icon-button.js';
+import '@open-cells/page-transitions/page-transition-head-styles.js';
 
 startApp({
   routes,
@@ -35,7 +36,7 @@ export class AppIndex extends LitElement {
 
     this.elementController.publish('liked-recipes', this._likedRecipes);
     this.elementController.subscribe('liked-recipes', data => {
-      this._setLocalStorage(data)
+      this._setLocalStorage(data);
     });
   }
 
@@ -93,16 +94,14 @@ export class AppIndex extends LitElement {
       : this._root?.setAttribute('color-scheme-dark', 'true');
   }
 
-  _setLocalStorage(setItem){
+  _setLocalStorage(setItem) {
     const arrayFromSet = Array.from(setItem);
     const jsonData = JSON.stringify(arrayFromSet);
     localStorage.setItem('_likedRecipes', jsonData);
   }
 
-  _getLocalStorage(){
+  _getLocalStorage() {
     const jsonData = localStorage.getItem('_likedRecipes');
     return jsonData ? new Set(JSON.parse(jsonData)) : new Set();
   }
-
-  
 }
