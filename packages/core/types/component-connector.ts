@@ -1,5 +1,3 @@
-import { Observable } from "rxjs";
-
 import { Binding } from './state/subscriptor';
 
 export { ComponentConnector } from "../src/component-connector";
@@ -70,10 +68,3 @@ export type CCSubscriptions = {
   inConnections: InConnection[]; 
   outConnections: OutConnection[];
 }
-
-// export  interface WCObservable extends Observable<PublishableValue> {
-//   node?: WCNode;
-//   eventName?: string;
-//   channelName?: string;
-//   options?: Connection
-// }

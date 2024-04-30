@@ -86,11 +86,7 @@ export const styles = css`
     left: 0;
     right: 0;
     bottom: 0;
-    visibility: hidden;
-  }
-
-  main ::slotted([state='active']) {
-    visibility: visible;
+    background-color: var(--surface);
   }
 
   /* 1024px */

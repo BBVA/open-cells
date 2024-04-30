@@ -10,8 +10,6 @@ import { Constants } from './constants';
  *
  * @typedef {import('../types').QueryParams} QueryParams
  *
- * @typedef {import('../types').RouterConfig} RouterConfig
- *
  * @typedef {import('../types').ParsedRoute} ParsedRoute
  *
  * @typedef {import('../types').RoutePage} RoutePage
@@ -308,7 +306,7 @@ export class Router {
    * @param {string | string[]} patterns - The patterns associated with the route.
    * @param {Function} action - The action to be executed when the route is matched.
    * @param {boolean} notFound - Indicates whether the route is the 404 page. Default is `false`.
-   * @param {string | undefined} component -  the name of component. 
+   * @param {string | undefined} component - The name of component.
    * @returns {Route} - The newly added route.
    */
   addRoute(name, patterns, action, notFound, component) {

@@ -12,6 +12,7 @@ import { PostMessageManager } from './manager/post-message';
 import { ApplicationConfigManager } from './manager/application-config';
 import { ApplicationStateManager } from './manager/application-state';
 import { Template } from './template';
+import { BRIDGE_CHANNEL_PREFIX } from './constants';
 
 /**
  * @typedef {import('../types').CellsConfig} CellsConfig
@@ -54,7 +55,7 @@ import { Template } from './template';
  *
  * @typedef {import('../types').Channel} Channel
  *
- * @typedef {import('../types').RouterConfig} RouterConfig
+ * @typedef {import('../types').RouteDefinition} RouteDefinition
  */
 const { dasherize } = Utils;
 
@@ -72,15 +73,27 @@ export let $bridge = null;
 let $queueCommands = [];
 
 /**
+ * Application´s Configuration object.
+ *
+ * @type {CellsConfig}
+ */
+let $config = {};
+
+/**
  * Starts the bridge.
  *
  * @param {CellsConfig} config - The configuration object.
  */
 export const startApp = function (config) {
   if (!$bridge) {
+    $config = config;
     new Bridge(config);
   }
   return $bridge;
+};
+
+export const getConfig = function () {
+  return $config;
 };
 
 /**
@@ -158,7 +171,7 @@ export class Bridge {
    *
    * @type {String}
    */
-  storagePrefix = '__bridge-';
+  storagePrefix = `${BRIDGE_CHANNEL_PREFIX}-`;
 
   /**
    * Lib version.
@@ -418,7 +431,7 @@ export class Bridge {
    * This method is executed when the event router-backstep is fired. It calls the hook method for
    * handling backward navigations and if that method allows the continuation, it does the
    * navegation. Otherwise it will cancel the navigation and publish the response in the channel
-   * __bridge_cancelled_back_navigation.
+   * [BRIDGE_CHANNEL_PREFIX]_cancelled_back_navigation.
    */
   handleBack() {
     this.goBack();
@@ -744,7 +757,7 @@ export class Bridge {
    *   session storage.
    */
   updateApplicationConfig(config, { sessionStorage } = {}) {
-    const CONFIG_CHANNEL_NAME = '__bridge_ch_config';
+    const CONFIG_CHANNEL_NAME = `${BRIDGE_CHANNEL_PREFIX}_ch_config`;
 
     this.publish(CONFIG_CHANNEL_NAME, config);
 
@@ -998,15 +1011,15 @@ export class Bridge {
    * Parses an array of routes and returns an object with route names as keys and corresponding path
    * and action as values.
    *
-   * @param {RouterConfig[]} routesArray - The array of routes to be parsed.
+   * @param {RouteDefinition[]} routesArray - The array of routes to be parsed.
    * @returns {ParsedRoute} - The parsed routes object.
    */
   _parseRoutes(routesArray) {
     /** @type {ParsedRoute} */
     const routesObject = {};
-    routesArray.forEach((/** @type {RouterConfig} */ route) => {
+    routesArray.forEach((/** @type {RouteDefinition} */ route) => {
       const { name, path, action, notFound, component } = route;
-      routesObject[name] = { path, action, notFound, component };
+      routesObject[name] = { path, action, notFound: Boolean(notFound), component };
     });
     return routesObject;
   }

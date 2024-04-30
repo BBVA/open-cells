@@ -1,4 +1,5 @@
 import { Subscription } from 'rxjs';
+import { BRIDGE_CHANNEL_PREFIX } from '../constants';
 
 /**
  * @typedef {import('../../types').WCNode} WCNode
@@ -204,7 +205,11 @@ export class Subscriptor {
    */
   unsubscribe(cleanPrivateChannels) {
     this.subscriptions.forEach(({ channel, subscription }) => {
-      if (cleanPrivateChannels === true || !channel.name.match(/\b__bridge_/)) {
+      if (
+        cleanPrivateChannels === true ||
+        !channel.name.match(new RegExp(`\\b${BRIDGE_CHANNEL_PREFIX}`))
+      ) {
+        //if (cleanPrivateChannels === true || !channel.name.match(/\b__bridge_/)) {
         subscription.unsubscribe();
       }
       //}

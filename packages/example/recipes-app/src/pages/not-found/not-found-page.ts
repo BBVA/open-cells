@@ -5,21 +5,24 @@ import { customElement, state } from 'lit/decorators.js';
 import '@material/web/button/outlined-button.js';
 import '@material/web/icon/icon.js';
 import '../../components/page-layout.js';
+import { PageLayout } from '../../components/page-layout.js';
 
+// @ts-ignore
 @customElement('not-found-page')
 export class NotFoundPage extends PageTransitionsMixin(LitElement) {
   pageController = new PageController(this);
 
   @state()
-  protected _layout;
+  protected _layout: PageLayout | null = null;
 
-  firstUpdated(props) {
+  firstUpdated(props: any) {
     super.firstUpdated?.(props);
 
     this._layout = this.querySelector('page-layout');
   }
 
   protected createRenderRoot(): HTMLElement | DocumentFragment {
+    // @ts-ignore
     return this;
   }
 
@@ -43,6 +46,6 @@ export class NotFoundPage extends PageTransitionsMixin(LitElement) {
   }
 
   onPageLeave() {
-    this._layout.resetScroll();
+    this._layout?.resetScroll();
   }
 }

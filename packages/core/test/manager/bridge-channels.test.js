@@ -3,6 +3,7 @@ import sinon from 'sinon';
 import { BridgeChannelManager } from '../../src/manager/bridge-channels.js';
 import { Channel } from '../../src/state/channel.js';
 import { Observable } from 'rxjs';
+import { BRIDGE_CHANNEL_PREFIX } from '../../src/constants.js';
 
 describe('BridgeChannelManager', () => {
   let bridge;
@@ -21,7 +22,9 @@ describe('BridgeChannelManager', () => {
   it('should get a bridge channel', () => {
     const channel = bridgeChannelManager.getBridgeChannel('testChannel');
     expect(channel).to.equal(channelStub);
-    expect(bridge.ComponentConnector.getChannel.calledWith('__bridge_ch_testChannel')).to.be.true;
+    expect(
+      bridge.ComponentConnector.getChannel.calledWith(`${BRIDGE_CHANNEL_PREFIX}_ch_testChannel`),
+    ).to.be.true;
   });
 
   // it('should get the idle callback channel', () => {
@@ -32,45 +35,61 @@ describe('BridgeChannelManager', () => {
   it('should get the application context channel', () => {
     const channel = bridgeChannelManager.getAppContextChannel();
     expect(channel).to.equal(channelStub);
-    expect(bridge.ComponentConnector.getChannel.calledWith('__bridge_app')).to.be.true;
+    expect(bridge.ComponentConnector.getChannel.calledWith(`${BRIDGE_CHANNEL_PREFIX}_app`)).to.be
+      .true;
   });
 
   it('should get the cancelled back navigations channel', () => {
     const channel = bridgeChannelManager.getCancelledBackNavigationChannel();
     expect(channel).to.equal(channelStub);
-    expect(bridge.ComponentConnector.getChannel.calledWith('__bridge_cancelled_back_navigation')).to
-      .be.true;
+    expect(
+      bridge.ComponentConnector.getChannel.calledWith(
+        `${BRIDGE_CHANNEL_PREFIX}_cancelled_back_navigation`,
+      ),
+    ).to.be.true;
   });
 
   it('should get the intercepted navigations channel', () => {
     const channel = bridgeChannelManager.getInterceptedNavigationChannel();
     expect(channel).to.equal(channelStub);
-    expect(bridge.ComponentConnector.getChannel.calledWith('__bridge_intercepted_navigation')).to.be
-      .true;
+    expect(
+      bridge.ComponentConnector.getChannel.calledWith(
+        `${BRIDGE_CHANNEL_PREFIX}_intercepted_navigation`,
+      ),
+    ).to.be.true;
   });
 
   it('should get the private channel that corresponds to a page', () => {
     const channel = bridgeChannelManager.getPrivate('testPage');
     expect(channel).to.equal(channelStub);
-    expect(bridge.ComponentConnector.getChannel.calledWith('__bridge_page_testPage')).to.be.true;
+    expect(
+      bridge.ComponentConnector.getChannel.calledWith(`${BRIDGE_CHANNEL_PREFIX}_page_testPage`),
+    ).to.be.true;
   });
 
   it('should get the post message channel for the given event name', () => {
     const channel = bridgeChannelManager.getPostMessageChannel('testEvent');
     expect(channel).to.equal(channelStub);
-    expect(bridge.ComponentConnector.getChannel.calledWith('__bridge_post_message_testEvent')).to.be
-      .true;
+    expect(
+      bridge.ComponentConnector.getChannel.calledWith(
+        `${BRIDGE_CHANNEL_PREFIX}_post_message_testEvent`,
+      ),
+    ).to.be.true;
   });
 
   it('should initialize the application context channel', () => {
     bridgeChannelManager.initAppContextChannel();
-    expect(bridge.ComponentConnector.getChannel.calledWith('__bridge_app')).to.be.true;
+    expect(bridge.ComponentConnector.getChannel.calledWith(`${BRIDGE_CHANNEL_PREFIX}_app`)).to.be
+      .true;
   });
 
   it('should initialize the cancelled back navigation channel', () => {
     bridgeChannelManager.initCancelledBackNavigationChannel();
-    expect(bridge.ComponentConnector.getChannel.calledWith('__bridge_cancelled_back_navigation')).to
-      .be.true;
+    expect(
+      bridge.ComponentConnector.getChannel.calledWith(
+        `${BRIDGE_CHANNEL_PREFIX}_cancelled_back_navigation`,
+      ),
+    ).to.be.true;
   });
 
   it('should initialize the private channel for the given page', () => {

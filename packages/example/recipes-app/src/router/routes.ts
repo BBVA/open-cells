@@ -1,4 +1,6 @@
-export const routes: object[] = [
+import { RouteDefinition } from '@open-cells/core/types/index.js';
+
+export const routes: RouteDefinition[] = [
   {
     path: '/',
     name: 'home',
@@ -34,7 +36,7 @@ export const routes: object[] = [
   {
     path: '/not-found',
     name: 'not-found',
-    notFound: true,
+    notFound: false,
     component: 'not-found-page',
     action: async () => {
       await import('../pages/not-found/not-found-page.js');

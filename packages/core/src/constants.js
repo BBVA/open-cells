@@ -25,7 +25,10 @@ const renderEngines = {
   LIT_ELEMENT: 'litElement',
 };
 
+export const BRIDGE_CHANNEL_PREFIX = '__oc';
+
 export const Constants = {
+  bridgeChannelPrefix: BRIDGE_CHANNEL_PREFIX,
   externalEvents,
   externalEventsCodes,
   initialTemplate,

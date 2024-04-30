@@ -213,6 +213,10 @@ const PageTransitionsMixinImpl = BaseClass =>
       super();
       this.pageTransitionType = 'fade';
       this.pageTransitionDisabled = false;
+    }
+
+    connectedCallback() {
+      super.connectedCallback();
       /** @internal */
       this.dataset.cellsPage = '';
     }

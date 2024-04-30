@@ -6,11 +6,15 @@ import { routes } from '../router/routes.js';
 import { styles } from './app-index.css.js';
 import '@material/web/icon/icon.js';
 import '@material/web/iconbutton/outlined-icon-button.js';
+import '@open-cells/page-transitions/page-transition-head-styles.js';
+import { appConfig } from '../config/app.config.js';
 
 startApp({
   routes,
-  binding: 'always',
-  mainNode: 'app__content',
+  mainNode: 'app-content',
+  viewLimit: 2,
+  persistentPages: ['recipe'],
+  appConfig,
 });
 
 @customElement('app-index')
@@ -31,19 +35,19 @@ export class AppIndex extends LitElement {
   connectedCallback() {
     super.connectedCallback();
 
-    this.elementController.subscribe('scroll', data => this._headerTransition(data));
+    this.elementController.subscribe('scroll', (data: HTMLElement) => this._headerTransition(data));
 
     this.elementController.publish('liked-recipes', this._likedRecipes);
-    this.elementController.subscribe('liked-recipes', data => {
-      this._setLocalStorage(data)
+    this.elementController.subscribe('liked-recipes', (data: Set<Object>) => {
+      this._setLocalStorage(data);
     });
   }
 
-  firstUpdated(props) {
+  firstUpdated(props: any) {
     super.firstUpdated(props);
 
-    this._header = this.shadowRoot?.querySelector('header');
-    this._root = document.querySelector(':root');
+    this._header = this.shadowRoot?.querySelector('header') as HTMLElement;
+    this._root = document.querySelector(':root') as HTMLElement;
   }
 
   render() {
@@ -79,7 +83,7 @@ export class AppIndex extends LitElement {
     `;
   }
 
-  _headerTransition(data) {
+  _headerTransition(data: HTMLElement) {
     if (data.scrollTop > 0) {
       this._header?.classList.add('scrolled');
     } else {
@@ -93,16 +97,14 @@ export class AppIndex extends LitElement {
       : this._root?.setAttribute('color-scheme-dark', 'true');
   }
 
-  _setLocalStorage(setItem){
+  _setLocalStorage(setItem: Set<Object>) {
     const arrayFromSet = Array.from(setItem);
     const jsonData = JSON.stringify(arrayFromSet);
     localStorage.setItem('_likedRecipes', jsonData);
   }
 
-  _getLocalStorage(){
+  _getLocalStorage() {
     const jsonData = localStorage.getItem('_likedRecipes');
     return jsonData ? new Set(JSON.parse(jsonData)) : new Set();
   }
-
-  
 }

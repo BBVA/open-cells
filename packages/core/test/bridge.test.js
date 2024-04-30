@@ -1,6 +1,7 @@
 import { expect } from '@esm-bundle/chai';
 import { Bridge } from '../../src/bridge.js';
 import { eventManager } from '../../src/manager/events.js';
+import { BRIDGE_CHANNEL_PREFIX } from '../../src/constants.js';
 
 class MockWebComponent extends HTMLElement {
   constructor() {
@@ -144,7 +145,7 @@ describe('Bridge', () => {
     // });
   });
 
-  describe('#private channel __bridge_app', () => {
+  describe('#private context app channel', () => {
     it('should update the app channel', async () => {
       const p = navigationComplete();
       bridge.navigate('home');
@@ -157,7 +158,7 @@ describe('Bridge', () => {
         interceptorContext: {},
         currentRoute: { name: 'home', params: {}, query: {}, hashPath: '/', subroute: undefined },
       };
-      bridge.registerInConnection('__bridge_app', elemStub, evt => {
+      bridge.registerInConnection(`${BRIDGE_CHANNEL_PREFIX}_app`, elemStub, evt => {
         elemStub.app = evt.value;
       });
 
@@ -173,10 +174,10 @@ describe('Bridge', () => {
 
       const elemStub = document.createElement('some-element');
 
-      bridge.registerInConnection('__bridge_page_home', elemStub, evt => {
+      bridge.registerInConnection(`${BRIDGE_CHANNEL_PREFIX}_page_home`, elemStub, evt => {
         elemStub.home = evt.value;
       });
-      bridge.registerInConnection('__bridge_page_category', elemStub, evt => {
+      bridge.registerInConnection(`${BRIDGE_CHANNEL_PREFIX}_page_category`, elemStub, evt => {
         elemStub.category = evt.value;
       });
 

@@ -12,19 +12,22 @@ export class PageLayout extends LitElement {
   @state()
   protected _scroller: HTMLElement | undefined | null = null;
 
-
-  firstUpdated(props) {
+  firstUpdated(props: any) {
     super.firstUpdated(props);
 
     this._scroller = this.shadowRoot?.querySelector('.scroller');
     this._scroller?.addEventListener('scroll', ev => {
-      this.elementController.publish('scroll', { scrollTop: ev.target.scrollTop });
+      this.elementController.publish('scroll', {
+        scrollTop: (ev.target as HTMLElement)?.scrollTop,
+      });
     });
   }
 
   disconnectedCallback() {
     this._scroller?.removeEventListener('scroll', ev => {
-      this.elementController.publish('scroll', { scrollTop: ev.target.scrollTop });
+      this.elementController.publish('scroll', {
+        scrollTop: (ev.target as HTMLElement)?.scrollTop,
+      });
     });
     this.elementController.unsubscribe('scroll');
     super.disconnectedCallback();
@@ -54,10 +57,10 @@ export class PageLayout extends LitElement {
     return html`
       <div class="footer-content">
         <p>
-          Data comming from
+          Data from
           <a href="https://www.themealdb.com/api.php" target="_blank">The Meal DB</a>
         </p>
-        <p>Made with <a href="#!/">Cells</a></p>
+        <p>Made with <a href="#!/">Open Cells</a></p>
       </div>
     `;
   }

@@ -2,7 +2,7 @@ import { ElementController } from '@open-cells/element-controller';
 
 export class PageController extends ElementController {
   static get BRIDGE_PAGE_PRIVATE_CHANNEL_PREFIX() {
-    return '__bridge_page_';
+    return '__oc_page_';
   }
 
   static getPagePrivateChannel(tagName) {

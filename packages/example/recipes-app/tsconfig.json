@@ -15,7 +15,12 @@
     "experimentalDecorators": true,
     "useDefineForClassFields": false,
     "allowJs": true,
-    "maxNodeModuleJsDepth": 2
+    "maxNodeModuleJsDepth": 2,
+    "noImplicitAny": true
   },
-  "include": ["src/**/*"]
+ 
+  "include": [
+    "src/**/*",
+    "typings/@types/**/*.d.ts"
+  ],
 }

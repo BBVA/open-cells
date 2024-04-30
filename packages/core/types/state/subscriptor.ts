@@ -1,14 +1,10 @@
 import { Observer, Subscription, TeardownLogic } from "rxjs";
 import { Channel } from "../../src/state/channel";
-import { WCNode, OutConnection } from "../component-connector";
+import { WCNode } from "../component-connector";
 import { PublishableValue } from "./channel";
 
 export type CallBackFunction = Function &
   Partial<Observer<PublishableValue>>
-
-// export type AugmentedFunction = CallBackFunction & {
-//   node: WCNode;
-// };
 
 export type AugmentedFunction = CallBackFunction 
 

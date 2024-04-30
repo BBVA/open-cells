@@ -1,3 +1,5 @@
+import { BRIDGE_CHANNEL_PREFIX } from '../constants';
+
 /**
  * @typedef {import('../../types').Bridge} Bridge
  *
@@ -60,9 +62,10 @@ export class PostMessageManager {
 
   /**
    * Handles the postMessage events sent to this window from its parent. It transforms them into
-   * channels __bridge_post_message_{your-event-name} including the payload, to do so the
-   * postMessage must be: { "event" : "your-event-name", "detail" : <any> } Creates and listens to
-   * the private channel __bridge_ch_send_post_message to send postMessages to parent window.
+   * channels [BRIDGE_CHANNEL_PREFIX]_post_message_{your-event-name} including the payload, to do so
+   * the postMessage must be: { "event" : "your-event-name", "detail" : <any> } Creates and listens
+   * to the private channel [BRIDGE_CHANNEL_PREFIX]_ch_send_post_message to send postMessages to
+   * parent window.
    */
   setupPostMessages() {
     if (this.enabled) {
@@ -74,7 +77,7 @@ export class PostMessageManager {
         }
       });
       // @ts-ignore
-      this._sendPostMessage({ event: '__bridge-ready' });
+      this._sendPostMessage({ event: `${BRIDGE_CHANNEL_PREFIX}-ready` });
       this.bridgeChannelManager
         .getBridgeChannel('send_post_message')
         // @ts-ignore

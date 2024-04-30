@@ -1,14 +1,14 @@
 import { NavigationWithParams } from './navigation-stack';
 import { Navigation } from './navigation-stack';
 
-export { Bridge } from  '../src/bridge';
+export { Bridge } from '../src/bridge';
 
 export type BridgeAPI = {
   logout: Function;
   subscribeToEvent: Function;
   registerInConnection: Function;
   unsubscribe: Function;
-  registerOutConnection:Function;
+  registerOutConnection: Function;
   publish: Function;
   updateSubroute: Function;
   getCurrentRoute: Function;
@@ -23,36 +23,43 @@ export type BridgeAPI = {
 export type CellsConfig = {
   mainNode?: string;
   postMessageTargetOrigin?: string;
-  eventSubscriptions?: {event: string, callback: Function}[];
+  eventSubscriptions?: { event: string; callback: Function }[];
   interceptor?: InterceptorFunction;
   skipNavigations?: Navigation[];
-  routes?: RouterConfig[];
+  routes?: RouteDefinition[];
+  viewLimit?: number;
+  persistentPages?: string[];
+  initialTemplate?: string;
+  appConfig?: Record<string, any>;
 };
 
-export type RouterConfig = {
+export type RouteDefinition = {
   name: string;
   path: string;
   action: Function;
-  notFound: boolean;
+  notFound?: boolean;
   component: string;
-}
+};
 
 export type ParsedRoute = {
-  [name: string]: { 
-    path: string; 
+  [name: string]: {
+    path: string;
     action: Function;
     notFound: boolean;
     component: string;
-  }
-}
+  };
+};
 
 export type RouteMap = {
-  [name: string]:  {
-    path: string;
-    action: Function;
-  }
-  | 
-  { path: string; action: Function; }[]
-}
+  [name: string]:
+    | {
+        path: string;
+        action: Function;
+      }
+    | { path: string; action: Function }[];
+};
 
-export type InterceptorFunction = (navigation: NavigationWithParams, ctx: object) => { intercept: boolean, redirect: string };
+export type InterceptorFunction = (
+  navigation: NavigationWithParams,
+  ctx: object,
+) => { intercept: boolean; redirect: string };

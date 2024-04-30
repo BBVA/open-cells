@@ -1,6 +1,7 @@
 import { Observable, fromEvent } from 'rxjs';
 import { first } from 'rxjs/operators';
 import { eventManager } from './events';
+import { BRIDGE_CHANNEL_PREFIX } from '../constants';
 
 /**
  * @typedef {import('../../types').AugmentedFunction} AugmentedFunction
@@ -56,7 +57,7 @@ export class BridgeChannelManager {
    * @returns {string} The application context channel name.
    */
   getAppContextChannelName() {
-    return '__bridge_app';
+    return `${BRIDGE_CHANNEL_PREFIX}_app`;
   }
 
   /**
@@ -65,7 +66,7 @@ export class BridgeChannelManager {
    * @returns {string} The cancelled back navigation channel name.
    */
   getCancelledBackNavigationChannelName() {
-    return '__bridge_cancelled_back_navigation';
+    return `${BRIDGE_CHANNEL_PREFIX}_cancelled_back_navigation`;
   }
 
   /**
@@ -74,7 +75,7 @@ export class BridgeChannelManager {
    * @returns {string} The intercepted navigation channel name.
    */
   getInterceptedNavigationChannelName() {
-    return '__bridge_intercepted_navigation';
+    return `${BRIDGE_CHANNEL_PREFIX}_intercepted_navigation`;
   }
 
   /**
@@ -83,7 +84,7 @@ export class BridgeChannelManager {
    * @returns {string} The private channel prefix.
    */
   getPrivateChannelPrefix() {
-    return '__bridge_page_';
+    return `${BRIDGE_CHANNEL_PREFIX}_page_`;
   }
 
   /**
@@ -92,7 +93,7 @@ export class BridgeChannelManager {
    * @returns {string} The event channel prefix.
    */
   getEventChannelPrefix() {
-    return '__bridge_evt_';
+    return `${BRIDGE_CHANNEL_PREFIX}_evt_`;
   }
 
   /**
@@ -101,7 +102,7 @@ export class BridgeChannelManager {
    * @returns {string} The bridge channel prefix.
    */
   getBridgeChannelPrefix() {
-    return '__bridge_ch_';
+    return `${BRIDGE_CHANNEL_PREFIX}_ch_`;
   }
 
   /**
@@ -110,7 +111,7 @@ export class BridgeChannelManager {
    * @returns {string} The post message channel prefix.
    */
   getPostMessageChannelPrefix() {
-    return '__bridge_post_message_';
+    return `${BRIDGE_CHANNEL_PREFIX}_post_message_`;
   }
 
   /**

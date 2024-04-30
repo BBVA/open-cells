@@ -4,6 +4,7 @@ import { Subscriptor } from './state/index.js';
 import { Constants } from './constants.js';
 import { ElementAdapter } from './adapter/element-adapter.js';
 import { ChannelManager } from './manager/channel-manager.js';
+import { BRIDGE_CHANNEL_PREFIX } from './constants.js';
 
 /**
  * @typedef {import('rxjs').Subscription} Subscription;
@@ -66,7 +67,8 @@ export class ComponentConnector {
      *
      * @type {RegExp}
      */
-    this.bridgeChannelsPrefix = /__bridge_(?!ch)/;
+    //this.bridgeChannelsPrefix = /__bridge_(?!ch)/;
+    this.bridgeChannelsPrefix = new RegExp(`${BRIDGE_CHANNEL_PREFIX}_(?!ch)`);
   }
 
   /**

@@ -2,48 +2,53 @@ import { html, LitElement, nothing } from 'lit';
 import { PageController } from '@open-cells/page-controller';
 import { PageTransitionsMixin } from '@open-cells/page-transitions';
 import { customElement, state, property } from 'lit/decorators.js';
-import { getAllCategories, getMealsByCategory, getMealDetailsById } from '../../components/meals.js';
+import {
+  getAllCategories,
+  getMealsByCategory,
+  getMealDetailsById,
+} from '../../components/meals.js';
 import '@material/web/button/outlined-button.js';
 import '@material/web/icon/icon.js';
-import '@material/web/iconbutton/outlined-icon-button.js';
+import { MdOutlinedIconButton } from '@material/web/iconbutton/outlined-icon-button.js';
 import '@material/web/progress/circular-progress.js';
 import '../../components/page-layout.js';
+import { PageLayout } from '../../components/page-layout.js';
 
+// @ts-ignore
 @customElement('category-page')
 export class CategoryPage extends PageTransitionsMixin(LitElement) {
   pageController = new PageController(this);
 
   protected createRenderRoot(): HTMLElement | DocumentFragment {
-    return this;
+    return this.shadowRoot || this;
   }
 
   @state()
-  protected _categoriesList = null;
+  protected _categoriesList: Array<any> | null = null;
 
   @state()
-  protected _currentCategory = null;
+  protected _currentCategory: Category | null = null;
 
   @state()
-  protected _recipesList = null;
+  protected _recipesList: { [key: string]: any } | null = null;
 
   @state()
-  protected _likedRecipes = new Set();
+  protected _likedRecipes: Set<Recipe> = new Set();
 
   @state()
-  protected _layout;
-
+  protected _layout: PageLayout | null = null;
 
   @property({ type: Object })
-  params = {};
+  params: { category?: string } = {};
 
   connectedCallback() {
     super.connectedCallback();
 
-    this.pageController.subscribe('categories', data => {
+    this.pageController.subscribe('categories', (data: Array<Category>) => {
       this._categoriesList = data;
     });
 
-    this.pageController.subscribe('liked-recipes', data => {
+    this.pageController.subscribe('liked-recipes', (data: Set<Recipe>) => {
       this._likedRecipes = data;
     });
   }
@@ -54,17 +59,19 @@ export class CategoryPage extends PageTransitionsMixin(LitElement) {
     super.disconnectedCallback();
   }
 
-  willUpdate(props) {
+  willUpdate(props: any) {
     super.willUpdate?.(props);
     if (props.has('params') || props.has('_categoriesList')) {
       this._currentCategory = this._categoriesList?.find(
         category => category.strCategory?.toLowerCase() === this.params.category?.toLowerCase(),
       );
-      this._getCurrentCategoryRecipes(this._currentCategory?.strCategory);
+      if (this._currentCategory) {
+        this._getCurrentCategoryRecipes(this._currentCategory.strCategory);
+      }
     }
   }
 
-  async _getCurrentCategoryRecipes(categoryName) {
+  async _getCurrentCategoryRecipes(categoryName: string) {
     if (this._recipesList?.[categoryName] || !categoryName) {
       return;
     }
@@ -78,7 +85,7 @@ export class CategoryPage extends PageTransitionsMixin(LitElement) {
     };
   }
 
-  async firstUpdated(props) {
+  async firstUpdated(props: any) {
     super.firstUpdated(props);
 
     if (!this._categoriesList) {
@@ -132,9 +139,9 @@ export class CategoryPage extends PageTransitionsMixin(LitElement) {
           </li>
         </ul>
 
-        <h2>${this._currentCategory.strCategory}</h2>
+        <h2>${this._currentCategory?.strCategory}</h2>
 
-        ${this._currentCategory.strCategoryDescription
+        ${this._currentCategory?.strCategoryDescription
           ? html`<p class="categories-description">
               ${this._currentCategory.strCategoryDescription}
             </p>`
@@ -145,11 +152,13 @@ export class CategoryPage extends PageTransitionsMixin(LitElement) {
 
   get _categoriesTpl() {
     return html`
-      ${this._recipesList?.[this._currentCategory.strCategory]
+      ${this._currentCategory && this._recipesList?.[this._currentCategory.strCategory]
         ? html`
             <ul class="page-categories categories-list">
-              ${this._recipesList[this._currentCategory.strCategory].map(
-                recipe => html`
+              ${this._recipesList &&
+              this._currentCategory &&
+              this._recipesList[this._currentCategory.strCategory]?.map(
+                (recipe: Recipe) => html`
                   <li class="category">
                     <div class="img-container">
                       <img src="${recipe.strMealThumb}" alt="" />
@@ -158,17 +167,18 @@ export class CategoryPage extends PageTransitionsMixin(LitElement) {
                     <a
                       class="recipe-title"
                       href="#!/recipe/${recipe.idMeal}"
-                      @click="${ev => this._navigateToRecipe(ev, recipe.idMeal)}"
+                      @click="${(ev: CustomEvent) => this._navigateToRecipe(ev, recipe.idMeal)}"
                     >
                       ${recipe.strMeal}
                     </a>
 
                     <md-outlined-icon-button
+                      md-outlined-icon-button
                       aria-label="Add receipe to favorite"
                       toggle
-                      @click="${ev => this._addLikedRecipes(ev, recipe)}"
-                      ?selected="${[...this._likedRecipes].find(
-                        item => item.idMeal === recipe.idMeal,
+                      @click="${(ev: CustomEvent) => this._addLikedRecipes(ev, recipe)}"
+                      ?selected="${Boolean(
+                        [...this._likedRecipes].find(item => item.idMeal === recipe.idMeal),
                       )}"
                     >
                       <md-icon>favorite</md-icon>
@@ -189,32 +199,34 @@ export class CategoryPage extends PageTransitionsMixin(LitElement) {
     `;
   }
 
-  _navigateToHome(ev) {
+  _navigateToHome(ev: CustomEvent) {
     ev.preventDefault();
     ev.stopPropagation();
     this.pageController.navigate('home');
   }
 
-  _navigateToFavoriteRecipes(ev) {
+  _navigateToFavoriteRecipes(ev: CustomEvent) {
     ev.preventDefault();
     ev.stopPropagation();
     this.pageController.navigate('favorite-recipes');
   }
 
-  _navigateToRecipe(ev, recipeId) {
+  _navigateToRecipe(ev: CustomEvent, recipeId: string) {
     ev.preventDefault();
     ev.stopPropagation();
     this.pageController.navigate('recipe', { recipeId: recipeId });
   }
 
-   async _addLikedRecipes(ev, recipe) {
+  async _addLikedRecipes(ev: CustomEvent, recipe: Recipe) {
     const favoriteRecipe = (await getMealDetailsById(recipe.idMeal)).meals[0];
-    ev.target.selected ? this._likedRecipes.add(favoriteRecipe) : this._delete(favoriteRecipe.idMeal, this._likedRecipes);
+    (ev.target as MdOutlinedIconButton).selected
+      ? this._likedRecipes.add(favoriteRecipe)
+      : this._delete(favoriteRecipe.idMeal, this._likedRecipes);
     this.pageController.publish('liked-recipes', this._likedRecipes);
     this.requestUpdate();
   }
 
-  _delete(id, set) {
+  _delete(id: string, set: Set<{ idMeal: string }>) {
     for (const item of set) {
       if (item.idMeal === id) {
         set.delete(item);
@@ -223,6 +235,6 @@ export class CategoryPage extends PageTransitionsMixin(LitElement) {
   }
 
   onPageLeave() {
-    this._layout.resetScroll()
+    this._layout?.resetScroll();
   }
 }
