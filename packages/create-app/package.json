@@ -1,6 +1,6 @@
 {
   "name": "@open-cells/create-app",
-  "version": "0.9.0",
+  "version": "0.13.0",
   "description": "Scaffold for Open Cells apps",
   "license": "MIT",
   "type": "module",
@@ -10,6 +10,7 @@
   },
   "scripts": {
     "start": "node ./src/create.js",
+    "update": "node ./scripts/update.js",
     "lint": "npm run lint:eslint && npm run lint:prettier",
     "lint:eslint": "eslint --ext .js,.mjs,.cjs .",
     "lint:prettier": "prettier \"**/*.{js,mjs,cjs,md.json}\" --check --ignore-path .eslintignore",

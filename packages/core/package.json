@@ -1,6 +1,6 @@
 {
   "name": "@open-cells/core",
-  "version": "1.0.0",
+  "version": "1.0.0-beta.1",
   "description": "Open Cells Core",
   "type": "module",
   "main": "src/index.js",

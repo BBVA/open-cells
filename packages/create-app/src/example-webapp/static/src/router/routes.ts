@@ -1,6 +1,4 @@
-import { RouteDefinition } from '@open-cells/core/types/index.js';
-
-export const routes: RouteDefinition[] = [
+export const routes: object[] = [
   {
     path: '/',
     name: 'home',

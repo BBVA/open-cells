@@ -8,21 +8,23 @@
     "node": ">=18.15.0",
     "npm": ">=7.0.0"
   },
-  "scripts": {
-    "serve": "web-dev-server --watch",
-    "start": "npm run serve"
-  },
   "type": "module",
+  "scripts": {
+    "start": "npm run serve",
+    "serve": "vite",
+    "build": "tsc --outDir dist && vite build --outDir dist",
+    "preview": "npm run build && vite preview"
+  },
   "dependencies": {
-    "@material/web": "^1.2.0",
-    "@open-cells/core": "^1.0.0",
-    "@open-cells/element-controller": "^1.0.0",
-    "@open-cells/page-controller": "^1.0.0",
+    "@material/web": "^1.4.0",
+    "@open-cells/core": "^1.0.0-beta.1",
+    "@open-cells/element-controller": "^1.0.0-beta.2",
+    "@open-cells/page-controller": "^1.0.0-beta.2",
+    "@open-cells/page-transitions": "^1.0.0-beta.1",
     "lit": "^3.0.0"
   },
   "devDependencies": {
-    "@web/dev-server": "^0.4.1",
-    "@web/dev-server-esbuild": "^1.0.1",
-    "typescript": "^5.3.3"
+    "typescript": "^5.4.5",
+    "vite": "^5.2.7"
   }
 }
