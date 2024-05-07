@@ -284,7 +284,6 @@ export class Bridge {
       $bridge = this;
       // @ts-ignore
       window.$bridge = $bridge;
-      this.printDebugInfo();
     } else {
       $bridge = {
         // bridge

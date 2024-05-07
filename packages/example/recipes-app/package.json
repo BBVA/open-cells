@@ -11,7 +11,7 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "tsc --outDir dist && vite build --outDir dist --assetsDir recipes-app",
+    "build": "tsc --outDir dist && vite build --outDir dist",
     "preview": "npm run build && vite preview"
   },
   "dependencies": {

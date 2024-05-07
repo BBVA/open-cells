@@ -60,7 +60,7 @@ export class PageLayout extends LitElement {
           Data from
           <a href="https://www.themealdb.com/api.php" target="_blank">The Meal DB</a>
         </p>
-        <p>Made with <a href="#!/">Open Cells</a></p>
+        <p>Made with <a href="https://www.opencells.dev">Open Cells</a></p>
       </div>
     `;
   }

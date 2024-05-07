@@ -93,6 +93,7 @@ export const WebappMixin = (subclass) =>
         `${this.destinationPath()}/images`,
       );
 
+
       this.copyTemplateJsonInto(
         `${this.__dirname}/templates/package.json`,
         this.destinationPath('package.json'),

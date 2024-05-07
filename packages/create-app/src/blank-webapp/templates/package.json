@@ -12,14 +12,14 @@
   "scripts": {
     "start": "npm run serve",
     "serve": "vite",
-    "build": "tsc --outDir dist && vite build --outDir dist",
+    "build": "tsc && vite build",
     "preview": "npm run build && vite preview"
   },
   "dependencies": {
     "@material/web": "^1.4.0",
-    "@open-cells/core": "^1.0.0-beta.1",
-    "@open-cells/element-controller": "^1.0.0-beta.2",
-    "@open-cells/page-controller": "^1.0.0-beta.2",
+    "@open-cells/core": "^1.0.0-beta.2",
+    "@open-cells/element-controller": "^1.0.0-beta.3",
+    "@open-cells/page-controller": "^1.0.0-beta.3",
     "@open-cells/page-transitions": "^1.0.0-beta.1",
     "lit": "^3.0.0"
   },

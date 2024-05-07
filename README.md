@@ -27,44 +27,12 @@ In this mono repo we have the modules that builds up Open Cells:
 - **`element-controller`**: provides the components the mechanisms to use the core API (navigation, state, configuration)
 - **`page-controller`**: extends `element-controller` and provides lifecycle hooks to handle page loading.
 
-## Starting with Open Cells
-><br>
-> While Open Cells is in preview we've made a way of creating and trying application in a simple way. You just have to clone this repository and once inside the folder of the project run:
->
-> ```sh
->npm install
->npm run create:preview
->```
->
-> This will run an application generator. It'll ask you if you want an empty application (minimal sample) or a full sample application (cooking recipes application).
->
-> After choosing the kind of application, you'll have to give it a name, ie. `my-app` and confirm the creation.
->
->The generator will create a folder inside `packages/example` with the given name, ie. `packages/example/my-app`.
->
->Now you can go to the application folder and install the dependencies:
->
->```sh
->cd packages/example/my-app
->npm install
->```
-> The tool is already developed to be used once it's published, so it'll advice you to go to my-app folder. But in preview mode you must follow these previous instructions to install the dependencies.
->
-> 👉🏻 As we are using a mono repo, the dependencies from the namespaces `@open-cells` will be resolved within the folder of the mono repo.
->
->Now you can serve and try the application running:
->
->```sh
->npm run start
->```
-><br>
-
 <br/>
 
 To create an application with Open Cells run:
 
 ```sh
-npm init @open-cells/app
+npx @open-cells/create-app
 ```
 
 You will be asked to enter a name for the application and once you confirm it a folder will be created with the application inside.
@@ -93,15 +61,21 @@ Open Cells won't require an specific folder structure but, it needs for these to
 The app created in the previous step follows this structure as a suggestion:
 
 ```
--+- src
- |--- components
- |    |
- |    +--- app-index.ts
- |--- pages
- |--- router
- |    |
- |    +--- route.ts
- +- index.html
+Root Directory/
+|── web-dev-server.config.js
+|── package.json
+|── tsconfig.json
+|── index.html
+|── src/
+    |── config/
+        └── app-config.js
+    |── components/
+    |── pages/
+    |   └── home/
+    |       └── home-page.ts
+    |── css/
+    └── routes/
+        └── routes.ts
 ```
 
 In `index.html` file you'll find:
