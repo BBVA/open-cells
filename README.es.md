@@ -1,10 +1,6 @@
 <div align="center">
-  <img
-    width="120rem"
-    src="./assets/logo.svg"
-    alt="Open Cells"
-  />
-  <h1 align="center">Open Cells</h1>
+  <img width="120rem" src="./assets/logo.svg" alt="Open Cells"/>
+  <h1>Open Cells</h1>
 </div>
 
 _Un framework para construir aplicaciones web SPA basadas en web components y los estándares web_.
@@ -29,44 +25,10 @@ En este mono repo están los módulos que forman Open Cells:
 - **`page-controller`**: extensión de `element-controller` y provee hooks de ciclo de vida para manejar la carga de páginas.
 - **`transitions`**: implementa animaciones de transición entre páginas.
 
-## Empezando
-
-><br>
->Mientras Open Cells está en fase de preview hemos preparado una forma de crear y probar aplicaciones de manera fácil. Simplemente tienes que clonar este repositorio y entrar en el directorio raíz del proyecto. Una vez que estés en ese directorio ejecuta:
->
->```sh
->npm install
->npm run create:preview
->```
->
->Esto ejecutará un generador de aplicaciones. El generador te pedirá que elijas si quieres crear una aplicación en blanco (funcionalidad mínima) o una aplicación de ejemplo más completa (aplicación de recetas de cocina).
->
->Después de elegir el tipo de aplicación, tendrás que darle un nombre, por ejemplo `my-app`, y confirmar la creación.
->
->El generador creará una carpeta dentro de `packages/example` con el nombre que le has dado a la aplicación, por ejemplo `packages/example/my-app`.
->
->Entra en el directorio de la aplicación e instala las dependencias:
->
->```sh
->cd packages/example/my-app
->npm install
->```
->La herramienta está ya diseñada para su uso una vez publicada por lo que te indicará que entres en el directorio my-app, pero en modo preview para debes seguir las indicaciones anteriores.
->
-> 👉🏻 Como estamos en un mono repo, las dependencias del namespace `@open-cells` se resolverán dentro del directorio del mono repo.
->
->Ya puedes servir y probar la aplicación ejecutando:
->
->```sh
->npm run start
->```
-><br>
-<br>
-
 Para crear una aplicación con Open Cells ejecuta:
 
-```sh
-npm init @open-cells/app
+```bash
+npx @open-cells/create-app
 ```
 
 Te pedirá que le des un nombre para la aplicación y te pedirá confirmar.
@@ -96,40 +58,43 @@ Open Cells no requiere una estructura de directorios específica, pero necesita 
 
 La aplicación que se crea con `npm init @open-cells/app` da como sugerencia la siguiente estructura:
 
-```
--+- src
- |--- components
- |    |
- |    +--- app-index.ts
- |--- pages
- |--- router
- |    |
- |    +--- route.ts
- +- index.html
-```
-
-En el fichero `index.html` tenemos:
-
-- un elemento con `id`, dentro de este elemento es donde se van a renderizar las páginas.
-
-```html
-<app-index id="app__content"></app-index>
-```
-
-- un import del fichero `app-index.ts`.
-
-```html
-<script type="module" src="src/components/app-index.ts"></script>
+```treeview
+Root Directory/
+|── package.json
+|── tsconfig.json
+|── index.html
+|── images/
+|   └── favicon.svg
+└── src/
+    |── components/
+    |   |── app-index.ts
+    |   └── app-index.css.js
+    |── pages/
+    |   └── home/
+    |   |   └── home-page.ts
+    |   └── second/
+    |       └── second-page.ts
+    |── css/
+    |   |── home.css
+    |   |── main.css
+    |   └── second.css
+    └── router/
+        └── routes.ts
 ```
 
-Este fichero es el encargado de arrancar la aplicación llamando a la función `startApp` que importamos de `@open-cells/core`.
+### Initialización de la APP
+
+El documento en el que se montará la app es `index.html`. En su body, contiene el componente `<app-index id="app-content">` que contendrá las páginas de la app y la etiqueta `<script>` que invoca toda la lógica de Open Cells.
+
+El fichero `src/components/app-index.ts` incluye los imports del core de Open Cells y la inicialización de la aplicación.
 
 ```js
 import { startApp } from '@open-cells/core';
+import { routes } from '../router/routes.js';
 
 startApp({
   routes,
-  mainNode: 'app__content',
+  mainNode: 'app-content',
 });
 ```
 
@@ -191,9 +156,7 @@ Esto permite implementar un patrón de publicador/suscriptor.
 #### Funciones clave
 
 - `publish`: la función publish permite enviar un valor a un canal, donde permanecerá hasta que se realice otra publicación.
-
 - `subscribe`: la función subscribe permite que los componentes se suscriban a un canal para recibir y reaccionar a los valores publicados.
-
 - `unsubscribe`: la función unsubscribe permite que los componentes dejen de actualizar su estado ya sea por que han sido desconectados, o por que necesitan dejar de recibir estos eventos por algún motivo.
 
 #### Ventajas de RxJS
@@ -244,21 +207,14 @@ Los controllers brindados por Open Cells son:
 ### ElementController
 
 - `subscribe(channelName, callback)`: se suscribe a un canal determinado `channelName`. Si el canal no existe, Open Cells lo crea en ese momento. La función `callback` se ejecuta cuando reacciona al cambio de estado (hay un nuevo valor en el canal).
-
 - `unsubscribe(channelName)`: desuscribe el componente del canal `channelName`.
-
 - `publish(channelName, value)`: publica el valor `value` en el canal `channelName`.
-
 - `publishOn(channelName, htmlElement, eventName)`: cada vez que el elemento `htmlElement` dispare un evento `eventName`, el `detail.value` se publica en el canal `channelName`.
-
 - `navigate(page, params)`: navega a la página `page` pasando los parámetros `params` (un objeto con pares clave/valor).
-
 - `backStep()`: va a la última página visitada anteriormente.
-
 - `getCurrentRoute()` devuelve información sobre la ruta actual.
 
 ### PageController
 
 - `onPageEnter`: hook que se ejecuta cuando la página entra (se hace visible en el viewport y está activa).
-
 - `onPageLeave`: hook que se ejecuta cuando la página sale (se oculta en el viewport y deja de estar activa).
