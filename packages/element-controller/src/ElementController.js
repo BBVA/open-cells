@@ -1,4 +1,4 @@
-import { $bridge, enqueCommand } from '@open-cells/core';
+import { $bridge, enqueueCommand } from '@open-cells/core';
 
 function __callBridge(...args) {
   const [command, ...parameters] = args;
@@ -14,7 +14,7 @@ function __callBridge(...args) {
     return result;
   }
 
-  enqueCommand(command, parameters);
+  enqueueCommand(command, parameters);
   return result;
 }
 

@@ -1,1 +1,1 @@
-export { $bridge, Bridge, enqueCommand, startApp, getConfig } from './bridge';
+export { $bridge, Bridge, enqueCommand, enqueueCommand, startApp, getConfig } from './bridge';
