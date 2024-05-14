@@ -498,7 +498,7 @@ export class Router {
    * @returns {{
    *   from: RoutePage;
    *   to: RoutePage;
-   *   [redirect: string];
+   *   redirect?: RoutePage;
    *   intercept: boolean;
    * }}
    *   - The intercepted navigation object.
