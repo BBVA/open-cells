@@ -96,15 +96,21 @@ export const getConfig = function () {
   return $config;
 };
 
+
 /**
  * Enqueues a bridge command due to delayed instance of bridge and premature execution of commands.
  *
  * @param {string} command - The command to be enqueued.
  * @param {any[]} parameters - The parameters to be enqueued.
  */
-export const enqueCommand = function (command, parameters) {
+export const enqueueCommand = function (command, parameters) {
   $queueCommands.push({ command, parameters });
 };
+
+/**
+ * @deprecated Use {@link enqueueCommand} instead
+ */
+export const enqueCommand = enqueueCommand;
 
 /**
  * Constants object containing various constant values.
