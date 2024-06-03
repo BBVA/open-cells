@@ -18,8 +18,43 @@ jobs:
           npm i --package-lock-only
           npm ci 
           npm run build --if-present
-          npm test --if-present
-      - name: Publish package on NPM.js
+      - name: Publish core package on NPM.js
+        working-directory: ./packages/core
+        run: npm publish
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_PUBLISH_TOKEN }}
+      - name: Publish core-plugin package on NPM.js
+        working-directory: ./packages/core-plugin
+        run: npm publish
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_PUBLISH_TOKEN }}
+      - name: Publish element-controller package on NPM.js
+        working-directory: ./packages/element-controller
+        run: npm publish
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_PUBLISH_TOKEN }}
+      - name: Publish page-controller package on NPM.js
+        working-directory: ./packages/page-controller
+        run: npm publish
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_PUBLISH_TOKEN }}
+      - name: Publish page-mixin package on NPM.js
+        working-directory: ./packages/page-mixin
+        run: npm publish
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_PUBLISH_TOKEN }}
+      - name: Publish page-transitions package on NPM.js
+        working-directory: ./packages/page-transitions
+        run: npm publish
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_PUBLISH_TOKEN }}
+      - name: Publish localize package on NPM.js
+        working-directory: ./packages/localize
+        run: npm publish
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_PUBLISH_TOKEN }}
+      - name: Publish create-app package on NPM.js
+        working-directory: ./packages/create-app
         run: npm publish
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_PUBLISH_TOKEN }}
