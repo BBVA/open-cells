@@ -17,7 +17,7 @@
 import chalk from 'chalk';
 import fs from 'fs';
 
-const version = JSON.parse(fs.readFileSync(`./../../package.json`, 'utf8')).version;
+const version = '1.0.0';
 
 const R = chalk.rgb(226, 104, 102).bold;
 const B = chalk.rgb(16, 33, 167).bold;
