@@ -1,3 +1,5 @@
+#!/usr/bin/env node
+
 /*
  * Copyright 2024 Bilbao Vizcaya Argentaria, S.A.
  *
