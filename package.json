@@ -7,8 +7,15 @@
   "author": "",
   "main": "index.js",
   "scripts": {
+    "clean": "find . -name \"node_modules\" -type d -prune -exec rm -rf '{}' +",
     "build": "wireit",
-    "create:preview": "cd ./packages/example && node ../create-app/src/create.js "
+    "create:preview": "cd ./packages/example && node ../create-app/src/create.js",
+    "changeset": "changeset",
+    "beta:on": "changeset pre enter beta",
+    "beta:off": "changeset pre exit",
+    "rc:on": "changeset pre enter rc",
+    "rc:off": "changeset pre exit",
+    "version": "npm run changeset version"
   },
   "keywords": [],
   "devDependencies": {
@@ -24,6 +31,7 @@
     "build": {
       "dependencies": [
         "./packages/core:build",
+        "./packages/example/recipes-app:build",
         "./packages/element-controller:build",
         "./packages/page-controller:build"
       ]
@@ -32,5 +40,8 @@
   "workspaces": [
     "packages/*",
     "packages/example/*"
-  ]
+  ],
+  "dependencies": {
+    "@changesets/cli": "^2.27.1"
+  }
 }

@@ -1,0 +1,54 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>OpenCells Localize demo</title>
+    <link rel="stylesheet" href="./css/demo.css" />
+    <script type="module" src="./intl-init.js"></script>
+    <script type="module" src="./demo.js"></script>
+  </head>
+
+  <body>
+    <div class="demo-heading">
+      <div class="selector">
+        <label for="lang-selector">Lang</label>
+        <select id="lang-selector">
+          <option value="en">en</option>
+          <option value="en-US">en-US</option>
+          <option value="en-GB">en-GB</option>
+          <option value="en-AU">en-AU</option>
+          <option value="en-XX">en-XX</option>
+          <hr />
+          <option value="es">es</option>
+          <option value="es-ES">es-ES</option>
+          <option value="es-UY">es-UY</option>
+          <option value="es-MX">es-MX</option>
+          <option value="es-XX">es-XX</option>
+          <hr />
+          <option value="xx">xx</option>
+          <option value="xx-XX">xx-XX</option>
+          <hr />
+          <option value="">No lang</option>
+        </select>
+      </div>
+    </div>
+
+    <demo-component-with-mixin></demo-component-with-mixin>
+
+    <script type="module">
+      import { setLang } from './demo.js';
+
+      // Lang selector initialization
+      const langSelector = document.querySelector('#lang-selector');
+      window.addEventListener('app-localize-status-change', ev => {
+        langSelector.value = document.documentElement.lang;
+      });
+
+      // Change language from lang selector
+      langSelector.addEventListener('change', ev => {
+        setLang(ev.target.value);
+      });
+    </script>
+  </body>
+</html>

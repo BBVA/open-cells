@@ -7,8 +7,7 @@ import { styles } from './app-index.css.js';
 
 startApp({
   routes,
-  binding: 'always',
-  mainNode: 'app__content',
+  mainNode: 'app-content',
 });
 
 @customElement('app-index')

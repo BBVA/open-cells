@@ -20,10 +20,12 @@ export type BridgeAPI = {
   setInterceptorContext: Function;
 };
 
+export type EventSubscription = { event: string; callback: Function };
+
 export type CellsConfig = {
-  mainNode?: string;
+  mainNode: string;
   postMessageTargetOrigin?: string;
-  eventSubscriptions?: { event: string; callback: Function }[];
+  eventSubscriptions?: EventSubscription[];
   interceptor?: InterceptorFunction;
   skipNavigations?: Navigation[];
   routes?: RouteDefinition[];
@@ -31,6 +33,7 @@ export type CellsConfig = {
   persistentPages?: string[];
   initialTemplate?: string;
   appConfig?: Record<string, any>;
+  commonPages?: string[];
 };
 
 export type RouteDefinition = {

@@ -1,4 +1,6 @@
-export const routes: object[] = [
+import { RouteDefinition } from '@open-cells/core/types'; // Import the missing 'RouteDefinition' type
+
+export const routes: RouteDefinition[] = [
   {
     path: '/',
     name: 'home',

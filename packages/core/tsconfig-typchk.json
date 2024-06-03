@@ -2,12 +2,13 @@
   "compilerOptions": {
     "allowJs": true,
     "checkJs": true,
-    "noEmit": false,
+    "noEmit": true,
     "strict": true,
     "moduleResolution": "node",
     "target": "ESNext",
     "lib": ["ESNext", "DOM"],
-    "esModuleInterop": true
+    "esModuleInterop": true,
+    "strictPropertyInitialization": false
   },
   "include": [
     "src/adapter/**/*.js",

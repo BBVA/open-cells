@@ -1,4 +1,4 @@
-import { RouteDefinition } from '@open-cells/core/types/index.js';
+import { RouteDefinition } from '@open-cells/core/types'; // Import the missing 'RouteDefinition' type
 
 export const routes: RouteDefinition[] = [
   {

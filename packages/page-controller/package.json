@@ -1,19 +1,24 @@
 {
   "name": "@open-cells/page-controller",
-  "version": "1.0.0-beta.3",
+  "version": "1.0.0",
   "scripts": {
     "build": "echo \"Building page...\""
   },
+  "types": "types/index.d.ts",
   "keywords": [],
   "author": "",
   "license": "Apache-2.0",
   "files": [
     "/src/",
-    "*.js"
+    "*.js",
+    "types/index.d.ts"
   ],
   "main": "index.js",
   "dependencies": {
-    "@open-cells/element-controller": "^1.0.0-beta.3"
+    "@open-cells/element-controller": "^1.0.0"
   },
-  "description": ""
+  "description": "",
+  "publishConfig": {
+    "access": "public"
+  }
 }

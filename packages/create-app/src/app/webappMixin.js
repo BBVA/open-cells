@@ -1,3 +1,19 @@
+/*
+ * Copyright 2024 Bilbao Vizcaya Argentaria, S.A.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 import path from 'path';
 import { glob } from 'glob';
 import fs from 'fs';
@@ -27,7 +43,7 @@ export const WebappMixin = (subclass) =>
     constructor() {
       super();
 
-      this.__dirname = null; // Implement this in the mixin
+      this.__dirname = path.resolve(); // Set __dirname to the current directory
       this.templatingOpts = { openDelimiter: '<', closeDelimiter: '>', delimiter: '%' };
       this.templatingOptsNoReplace = {
         openDelimiter: 'null',
@@ -68,10 +84,9 @@ export const WebappMixin = (subclass) =>
 
           if (fileContent !== false) {
             const processed = fileContent;
-
             const replace = path.join(fromGlob.replace(/\*/g, '')).replace(/\\(?! )/g, '/');
+            const toPath = path.join(toDir, path.relative(replace, filePath));
 
-            const toPath = filePath.replace(replace, `${toDir}/`);
             copiedFiles.push({
               toPath,
               processed,
@@ -93,6 +108,12 @@ export const WebappMixin = (subclass) =>
         `${this.destinationPath()}/images`,
       );
 
+      if (this.options.type === 'exampleWebapp') {
+        await this.copyFiles(
+          `${this.__dirname}/static/typings/**/*`,
+          `${this.destinationPath()}/typings`,
+        );
+      }
 
       this.copyTemplateJsonInto(
         `${this.__dirname}/templates/package.json`,

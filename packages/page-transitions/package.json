@@ -1,6 +1,6 @@
 {
   "name": "@open-cells/page-transitions",
-  "version": "1.0.0-beta.1",
+  "version": "1.0.0",
   "description": "",
   "keywords": [],
   "exports": {
@@ -17,5 +17,8 @@
   "dependencies": {
     "lit": "^3.0.0",
     "@open-wc/dedupe-mixin": "^1.4.0"
+  },
+  "publishConfig": {
+    "access": "public"
   }
 }

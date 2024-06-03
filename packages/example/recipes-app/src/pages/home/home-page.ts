@@ -1,5 +1,4 @@
 import { html, LitElement } from 'lit';
-import { PageController } from '@open-cells/page-controller';
 import { PageTransitionsMixin } from '@open-cells/page-transitions';
 import { customElement, state } from 'lit/decorators.js';
 import { map } from 'lit/directives/map.js';
@@ -12,12 +11,11 @@ import '@material/web/list/list-item.js';
 import '@material/web/list/list.js';
 import '../../components/page-layout.js';
 import { PageLayout } from '../../components/page-layout.js';
+import { PageMixin } from '@open-cells/page-mixin';
 
 // @ts-ignore
 @customElement('home-page')
-export class HomePage extends PageTransitionsMixin(LitElement) {
-  pageController = new PageController(this);
-
+export class HomePage extends PageTransitionsMixin(PageMixin(LitElement)) {
   protected createRenderRoot(): Element | ShadowRoot {
     // @ts-ignore
     return this;
@@ -36,25 +34,33 @@ export class HomePage extends PageTransitionsMixin(LitElement) {
   protected _layout: PageLayout | null = null;
 
   connectedCallback() {
+    ``;
     super.connectedCallback();
-    this.pageController.subscribe('random-recipe', (data: Recipe) => {
+
+    this.subscribe('random-recipe', (data: Recipe) => {
       this._randomRecipe = data;
     });
 
-    this.pageController.subscribe('categories', (data: Category[]) => {
-      this._categoriesList = data;
-    });
+    this.subscribe(
+      'categories',
+       (data: Category[]) => {
+        this._categoriesList = data;
+      },
+    );
 
-    this.pageController.subscribe('liked-recipes', (data: Set<Recipe>) => {
-      this._likedRecipes = data;
-      this.requestUpdate();
-    });
+    this.subscribe(
+      'liked-recipes',
+      (data: Set<Recipe>)=> {
+        this._likedRecipes = data;
+        this.requestUpdate();
+      },
+    );
   }
 
   disconnectedCallback() {
-    this.pageController.unsubscribe('random-recipe');
-    this.pageController.unsubscribe('categories');
-    this.pageController.unsubscribe('liked-recipes');
+    this.unsubscribe('random-recipe');
+    this.unsubscribe('categories');
+    this.unsubscribe('liked-recipes');
     super.disconnectedCallback();
   }
 
@@ -63,13 +69,13 @@ export class HomePage extends PageTransitionsMixin(LitElement) {
 
     if (!this._randomRecipe) {
       const recipe = await getRandomMeal();
-      this.pageController.publish('random-recipe', recipe?.meals?.[0]);
+      this.publish('random-recipe', recipe?.meals?.[0]);
     }
 
     if (!this._categoriesList) {
       const { categories } = await getAllCategories();
       categories.sort((a: Category, b: Category) => a.strCategory.localeCompare(b.strCategory));
-      this.pageController.publish('categories', categories);
+      this.publish('categories', categories);
     }
 
     this._layout = this.querySelector('page-layout');
@@ -83,7 +89,7 @@ export class HomePage extends PageTransitionsMixin(LitElement) {
 
           <md-outlined-button
             aria-label="favorite recipes"
-            @click="${() => this.pageController.navigate('favorite-recipes')}"
+            @click="${() => this.navigate('favorite-recipes')}"
           >
             <md-icon filled slot="icon">favorite</md-icon>
             ${this._likedRecipes?.size}
@@ -195,13 +201,13 @@ export class HomePage extends PageTransitionsMixin(LitElement) {
   _navigateToRecipe(ev: CustomEvent, recipeId: string) {
     ev.preventDefault();
     ev.stopPropagation();
-    this.pageController.navigate('recipe', { recipeId: recipeId });
+    this.navigate('recipe', { recipeId: recipeId });
   }
 
   _navigateToCategory(ev: CustomEvent, category: string) {
     ev.preventDefault();
     ev.stopPropagation();
-    this.pageController.navigate('category', { category: category });
+    this.navigate('category', { category: category });
   }
 
   _addLikedRecipes(ev: CustomEvent, recipe: Recipe) {
@@ -211,7 +217,7 @@ export class HomePage extends PageTransitionsMixin(LitElement) {
     (ev.target as MdOutlinedIconButton).selected
       ? this._likedRecipes?.add(recipe)
       : this._delete(recipe, this._likedRecipes);
-    this.pageController.publish('liked-recipes', this._likedRecipes);
+    this.publish('liked-recipes', this._likedRecipes);
     this.requestUpdate();
   }
 
