@@ -1,7 +1,6 @@
 .DS_Store
 .vscode
 .history
-.wireit
 npm-debug.log
 coverage
 coverage-reports
@@ -14,8 +13,3 @@ server
 /playwright-report/
 /blob-report/
 /playwright/.cache/
-/packages/example/*
-!/packages/example/recipes-app/
-/packages/example/recipes-app/types/
-!/packages/example/blank-app/
-/packages/example/blank-app/types/

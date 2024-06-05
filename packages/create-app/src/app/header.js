@@ -17,7 +17,22 @@
 import chalk from 'chalk';
 import fs from 'fs';
 
-const version = '1.0.0';
+import path from 'path';
+import { fileURLToPath } from 'url';
+import { dirname } from 'path';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
+
+let version 
+try {
+    version = JSON.parse(
+        fs.readFileSync(path.join(__dirname, '..', '..', 'package.json'), 'utf8'),
+      ).version;
+} catch (error) {
+    version = '^1.0.0'; 
+}
+
 
 const R = chalk.rgb(226, 104, 102).bold;
 const B = chalk.rgb(16, 33, 167).bold;

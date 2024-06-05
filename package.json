@@ -15,7 +15,8 @@
     "beta:off": "changeset pre exit",
     "rc:on": "changeset pre enter rc",
     "rc:off": "changeset pre exit",
-    "version": "npm run changeset version"
+    "version": "npm run changeset version && npm run create-app:update",
+    "create-app:update": "npm --prefix ./packages/create-app run update"
   },
   "keywords": [],
   "devDependencies": {

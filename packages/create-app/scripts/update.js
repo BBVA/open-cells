@@ -74,6 +74,8 @@ function copyIndexHtml(inputPath, outputPath) {
   fs.writeFileSync(outputPath, replaceTitle(inputData));
 }
 
+// recipes app
+
 copyDirectory(
   path.join('..', 'example', 'recipes-app', 'src'),
   path.join('.', 'src', 'example-webapp', 'static', 'src'),
@@ -98,4 +100,32 @@ copyIndexHtml(
 fs.copyFileSync(
   path.join('..', 'example', 'recipes-app', 'tsconfig.json'),
   path.join('.', 'src', 'example-webapp', 'static', 'root', 'tsconfig.json'),
+);
+
+// blank app
+
+copyDirectory(
+  path.join('..', 'example', 'blank-app', 'src'),
+  path.join('.', 'src', 'blank-webapp', 'static', 'src'),
+  true,
+);
+copyDirectory(
+  path.join('..', 'example', 'blank-app', 'images'),
+  path.join('.', 'src', 'blank-webapp', 'static', 'images'),
+  true,
+);
+
+copyPackageJSON(
+  path.join('..', 'example', 'blank-app', 'package.json'),
+  path.join('.', 'src', 'blank-webapp', 'templates', 'package.json'),
+);
+
+copyIndexHtml(
+  path.join('..', 'example', 'blank-app', 'index.html'),
+  path.join('.', 'src', 'blank-webapp', 'templates', 'index.html'),
+);
+
+fs.copyFileSync(
+  path.join('..', 'example', 'blank-app', 'tsconfig.json'),
+  path.join('.', 'src', 'blank-webapp', 'static', 'root', 'tsconfig.json'),
 );

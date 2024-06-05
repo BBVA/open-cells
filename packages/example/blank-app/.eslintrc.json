@@ -1,0 +1,56 @@
+{
+  "extends": "eslint:recommended",
+  "env": {
+    "browser": true,
+    "es6": true
+  },
+  "parser": "@typescript-eslint/parser",
+  "parserOptions": {
+    "project": "./packages/bridge/tsconfig-typchk.json"
+  },  
+  "plugins": [
+    "@typescript-eslint",
+    "eslint-config-prettier",
+    "eslint-plugin-prettier"
+  ],
+  "globals": {
+    "assert": false,
+    "it": false,
+    "after": false,
+    "before": false,
+    "beforeEach": false,
+    "afterEach": false,
+    "describe": false,
+    "xdescribe": false,
+    "xit": false,
+    "cells": false,
+    "Cells": false,
+    "CellsApp": false,
+    "CellsPolymerBridge": false,
+    "CellsBridge": false,
+    "WeakMap": false,
+    "page": false,
+    "Platform": false,
+    "Polymer": false,
+    "Promise": false,
+    "suite": false,
+    "suiteSetup": false,
+    "sinon": false,
+    "flush": false,
+    "expect": false,
+    "test": false,
+    "unwrap": false,
+    "WCT": false,
+    "wrap": false,
+    "suiteTeardown": false,
+    "setup": false,
+    "teardown": false,
+    "Rx": false,
+    "module": false
+  },
+  "rules": {
+    "no-console": 0,
+    "brace-style": "error",
+    "indent": ["error", 2]
+  }
+}
