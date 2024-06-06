@@ -1,0 +1,27 @@
+{
+  "private": true,
+  "name": "blank-app",
+  "description": "An application built using Open Cells and Lit",
+  "license": "Apache-2.0",
+  "version": "0.1.1",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc && vite build",
+    "preview": "npm run build && vite preview"
+  },
+  "dependencies": {
+    "@open-cells/core": "^1.0.1",
+    "@open-cells/element-controller": "^1.0.1",
+    "@open-cells/page-controller": "^1.0.1",
+    "lit": "^3.0.0"
+  },
+  "devDependencies": {
+    "typescript": "^5.4.5",
+    "vite": "^5.2.7"
+  },
+  "engines": {
+    "node": ">=18.15.0",
+    "npm": ">=7.0.0"
+  }
+}

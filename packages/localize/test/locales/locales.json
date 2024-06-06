@@ -1,0 +1,50 @@
+{
+  "en": {
+    "simple-key": "This is a value",
+    "html-key": "This is a <b>value</b>",
+    "simple-key-plural": "You have {numItems, plural, =0 {no items.} =1 {one item.} other {# items.}}",
+    "simple-key-date": "Starts on {exampleDate, date, medium}",
+    "simple-key-currency": "Your available balance is {exampleBalance, number, currency}",
+    "html-key-currency": "Your <b>available</b> balance is <b>{exampleBalance, number, currency}</b>",
+    "simple-key-intl-date-lang-demo": "The date is {exampleDate, date, long}",
+    "simple-key-intl-amount-lang-demo": "Balance: {exampleBalance, number, currency}",
+    "base-only-lang-key": "This text is only defined in 'en' base language",
+    "base-override-lang-key": "This text is defined in 'en'"
+  },
+  "en-GB": {
+    "specific-only-lang-key": "This text is defined in 'en-GB' language but not in 'en'",
+    "base-override-lang-key": "This text is defined in 'en-GB'"
+  },
+  "en-US": {
+    "specific-only-lang-key": "This text is defined in 'en-US' language but not in 'en'",
+    "base-override-lang-key": "This text is defined in 'en-US'"
+  },
+  "en-AU": {
+    "specific-only-lang-key": "This text is defined in 'en-AU' language but not in 'en'",
+    "base-override-lang-key": "This text is defined in 'en-AU'"
+  },
+  "es": {
+    "simple-key": "Esto es un valor",
+    "html-key": "Esto es un <b>valor</b>",
+    "simple-key-plural": "{numItems, plural, =0 {No tienes elementos.} =1 {Tienes un elemento.} other {Tienes # elementos.}}",
+    "simple-key-date": "Comienza el día {exampleDate, date, medium}",
+    "simple-key-currency": "Tu saldo disponible es {exampleBalance, number, currency}",
+    "html-key-currency": "Tu saldo <b>disponible</b> es <b>{exampleBalance, number, currency}</b>",
+    "simple-key-intl-date-lang-demo": "La fecha es {exampleDate, date, long}",
+    "simple-key-intl-amount-lang-demo": "Saldo: {exampleBalance, number, currency}",
+    "base-only-lang-key": "Este texto solo está definido en el idioma base 'es'",
+    "base-override-lang-key": "Este texto está definido en 'es'"
+  },
+  "es-ES": {
+    "specific-only-lang-key": "Este texto está definido en el idioma 'es-ES' pero no en 'es'",
+    "base-override-lang-key": "Este texto está definido en 'es-ES'"
+  },
+  "es-UY": {
+    "specific-only-lang-key": "Este texto solo está definido en el idioma 'es-UY' pero no en 'es'",
+    "base-override-lang-key": "Este texto está definido en 'es-UY'"
+  },
+  "es-MX": {
+    "specific-only-lang-key": "Este texto solo está definido en el idioma 'es-MX' pero no en 'es'",
+    "base-override-lang-key": "Este texto está definido en 'es-MX'"
+  }
+}

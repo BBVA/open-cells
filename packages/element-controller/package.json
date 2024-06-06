@@ -1,7 +1,8 @@
 {
   "name": "@open-cells/element-controller",
-  "version": "1.0.0-beta.3",
+  "version": "1.0.1",
   "main": "index.js",
+  "types": "types/index.d.ts",
   "scripts": {
     "build": "echo \"Building element...\""
   },
@@ -10,10 +11,14 @@
   "license": "Apache-2.0",
   "description": "",
   "dependencies": {
-    "@open-cells/core": "^1.0.0-beta.2"
+    "@open-cells/core-plugin": "^1.1.1"
   },
   "files": [
     "/src/",
-    "*.js"
-  ]
+    "*.js",
+    "/types/index.d.ts"
+  ],
+  "publishConfig": {
+    "access": "public"
+  }
 }

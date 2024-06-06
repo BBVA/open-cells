@@ -1,3 +1,19 @@
+/*
+ * Copyright 2024 Bilbao Vizcaya Argentaria, S.A.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 // eslint-disable-next-line no-unused-vars../types
 import { ComponentConnector } from './component-connector';
 import { Router } from './router';
@@ -27,6 +43,8 @@ import { BRIDGE_CHANNEL_PREFIX } from './constants';
  *
  * @typedef {import('../types').Binding} Binding
  *
+ * @typedef {import('../types').EventSubscription} EventSubscription
+ *
  * @typedef {import('../types').CallBackFunction} CallBackFunction
  *
  * @typedef {import('../types').IndexableHTMLElement} IndexableHTMLElement
@@ -35,13 +53,15 @@ import { BRIDGE_CHANNEL_PREFIX } from './constants';
  *
  * @typedef {import('../types').AugmentedFunction} AugmentedFunction
  *
- * @typedef {import('../types').Route} Route
+ * @typedef {import('./route').Route} Route
  *
  * @typedef {import('../types').RouteData} RouteData
  *
  * @typedef {import('../types').ParsedRoute} ParsedRoute
  *
  * @typedef {import('../types').NavigationWithParams} NavigationWithParams
+ *
+ * @typedef {import('../types').Navigation} Navigation
  *
  * @typedef {import('../types').Connection} Connection
  *
@@ -56,6 +76,8 @@ import { BRIDGE_CHANNEL_PREFIX } from './constants';
  * @typedef {import('../types').Channel} Channel
  *
  * @typedef {import('../types').RouteDefinition} RouteDefinition
+ *
+ * @typedef {import('../types').InterceptorFunction} InterceptorFunction
  */
 const { dasherize } = Utils;
 
@@ -77,7 +99,7 @@ let $queueCommands = [];
  *
  * @type {CellsConfig}
  */
-let $config = {};
+let $config;
 
 /**
  * Starts the bridge.
@@ -96,7 +118,6 @@ export const getConfig = function () {
   return $config;
 };
 
-
 /**
  * Enqueues a bridge command due to delayed instance of bridge and premature execution of commands.
  *
@@ -108,9 +129,160 @@ export const enqueueCommand = function (command, parameters) {
 };
 
 /**
- * @deprecated Use {@link enqueueCommand} instead
+ * Calls a command on the bridge with the provided parameters. If the bridge is not ready, the
+ * command is enqueued to be executed later.
+ *
+ * @param {...any} args - The arguments to pass to the bridge command. The first argument is the
+ *   command name, and the rest are the parameters for the command.
+ * @returns {any} The result of the bridge command, or undefined if the bridge is not ready.
+ * @throws {Error} If the bridge is ready but the command does not exist on the bridge.
  */
-export const enqueCommand = enqueueCommand;
+function __callBridge(...args) {
+  const [command, ...parameters] = args;
+  let result;
+
+  // cells is ready
+  if ($bridge) {
+    // @ts-ignore
+    if (!$bridge[command]) {
+      throw new Error(`WARNING: Invalid cells bridge command execution: ${command}.`);
+    }
+    // @ts-ignore
+    result = $bridge[command](...parameters);
+    return result;
+  }
+
+  enqueueCommand(command, parameters);
+  return result;
+}
+
+/**
+ * Subscribes a node to a specific channel.
+ *
+ * @param {string} channelName - The name of the channel to subscribe to.
+ * @param {Object} node - The node that is subscribing.
+ * @param {Function} callback - The function to call when a message is received.
+ * @export
+ */
+export function subscribe(channelName, node, callback) {
+  __callBridge('registerInConnection', channelName, node, callback);
+}
+
+/**
+ * Unsubscribes a node from specific channels.
+ *
+ * @param {string[] | string} channels - The channels to unsubscribe from. Can be a single channel
+ *   name or an array of channel names.
+ * @param {Object} node - The node that is unsubscribing.
+ * @export
+ */
+export function unsubscribe(channels, node) {
+  __callBridge('unsubscribe', channels, node);
+}
+
+/**
+ * Publishes a value to a specific channel.
+ *
+ * @param {string} channelName - The name of the channel to publish to.
+ * @param {any} value - The value to publish.
+ * @param {Object} options - Optional parameters for the publish operation.
+ * @export
+ */
+export function publish(channelName, value, options = {}) {
+  __callBridge('publish', channelName, value, options);
+}
+
+/**
+ * Registers an event on an HTML element to publish on a specific channel when the event is
+ * triggered.
+ *
+ * @param {string} channelName - The name of the channel to publish to.
+ * @param {HTMLElement} htmlElement - The HTML element to register the event on.
+ * @param {string} eventName - The name of the event to register.
+ * @export
+ */
+export function publishOn(channelName, htmlElement, eventName) {
+  __callBridge('registerOutConnection', channelName, htmlElement, eventName);
+}
+
+/**
+ * Navigates to a specific page with optional parameters.
+ *
+ * @param {string} page - The name of the page to navigate to.
+ * @param {Object} params - Optional parameters to pass to the page.
+ * @export
+ */
+export function navigate(page, params) {
+  __callBridge('navigate', page, params);
+}
+
+/**
+ * Updates the context of the interceptor using the partial context.
+ *
+ * @param {Object} ctx - The partial context.
+ * @export
+ */
+export function updateInterceptorContext(ctx) {
+  __callBridge('updateInterceptorContext', ctx);
+}
+
+/**
+ * Resets the context of the interceptor to its default state.
+ *
+ * @export
+ */
+export function resetInterceptorContext() {
+  __callBridge('resetInterceptorContext');
+}
+
+/**
+ * Retrieves the current context of the interceptor.
+ *
+ * @returns {Object} The current context of the interceptor.
+ * @export
+ */
+export function getInterceptorContext() {
+  return __callBridge('getInterceptorContext');
+}
+
+/**
+ * Sets the context of the interceptor.
+ *
+ * @param {Object} ctx - The new context for the interceptor.
+ * @export
+ */
+export function setInterceptorContext(ctx) {
+  __callBridge('setInterceptorContext', ctx);
+}
+
+/**
+ * Retrieves the current route.
+ *
+ * @returns {RouteData} The current route.
+ * @export
+ */
+export function getCurrentRoute() {
+  return __callBridge('getCurrentRoute');
+}
+
+/**
+ * Updates the current subroute.
+ *
+ * @param {string} subroute - The new subroute.
+ * @export
+ */
+export function updateSubroute(subroute) {
+  __callBridge('updateSubroute', subroute);
+}
+
+/**
+ * Navigates one step back in the navigation history.
+ *
+ * @export
+ */
+export function backStep() {
+  __callBridge('backStep');
+}
 
 /**
  * Constants object containing various constant values.
@@ -207,6 +379,13 @@ export class Bridge {
   __mainNodeElement = null;
 
   /**
+   * The node's id where the template will be rendered.
+   *
+   * @type {String}
+   */
+  mainNode;
+
+  /**
    * Events to expose
    *
    * @type {string[]}
@@ -227,16 +406,73 @@ export class Bridge {
    */
   navRequestListener;
 
+  /** @type {ComponentConnector} */
+  ComponentConnector;
+
+  /** @type {TemplateManager} */
+  TemplateManager;
+
+  /** @type {Router} */
+  Router;
+
+  /** @type {BridgeChannelManager} */
+  BridgeChannelManager;
+
+  /** @type {ActionChannelManager} */
+  ActionChannelManager;
+
+  /** @type {PostMessageManager} */
+  PostMessageManager;
+
+  /** @type {ApplicationConfigManager} */
+  ApplicationConfigManager;
+
+  /** @type {ApplicationStateManager} */
+  ApplicationStateManager;
+
+  /** @type {InterceptorFunction} */
+  interceptor;
+
+  /** @type {Navigation[]} */
+  skipNavigations;
+
+  /** @type {EventSubscription[]} */
+  eventSubscriptions;
+
+  /** @type {string} */
+  postMessageTargetOrigin;
+
+  /** @type {string[]} */
+  commonPages;
+
   /** @param {CellsConfig} config */
   constructor(config) {
-    const { NAV_REQUEST, ROUTER_BACKSTEP } = externalEventsCodes;
-
-    if (!config || typeof config !== 'object') {
-      config = {};
+    if (config && typeof config == 'object') {
+      Object.assign(this, config);
     }
 
-    Object.assign(this, config);
+    if (!this.mainNode) {
+      console.warn('You should indicate the main node of your app');
+    }
 
+    this._initializeManagers();
+
+    this._initializeDebug();
+    this._initializeRouter();
+
+    this._initializeBridgeStatus();
+    this._initializeEventListeners();
+
+    this.PostMessageManager.setupPostMessages();
+
+    this._initCrossComponents();
+    this._plugExternalEvents();
+
+    this._lazyLoadPages(this.commonPages || []);
+  }
+
+  /** Initialize managers and conectors */
+  _initializeManagers() {
     /** @type {ComponentConnector} */
     this.ComponentConnector = new ComponentConnector();
 
@@ -265,27 +501,10 @@ export class Bridge {
       // this.ComponentConnector.manager.channels = globalChannel;
       this.ComponentConnector.setChannels(globalChannel);
     }
+  }
 
-    this.eventSubscriptions = config.eventSubscriptions;
-    this.skipNavigations = config.skipNavigations;
-    this.postMessageTargetOrigin = config.postMessageTargetOrigin;
-    this.interceptor = config.interceptor;
-    this.mainNode = config.mainNode;
-    this.routes = config.routes;
-
-    if (!this.mainNode) {
-      console.warn('You should indicate the main node of your app');
-    } else {
-      this._plugExternalEvents();
-    }
-
-    this._initCrossComponents();
-
-    if (this.interceptor && typeof this.interceptor === 'function') {
-      this.Router.channelManager = this.BridgeChannelManager;
-      this.Router.interceptor = this.interceptor;
-    }
-
+  /** Initialize debug mode * */
+  _initializeDebug() {
     if (this.debug) {
       $bridge = this;
       // @ts-ignore
@@ -330,43 +549,60 @@ export class Bridge {
         setInterceptorContext: (/** @type {Object} */ ctx) => this.setInterceptorContext(ctx),
       };
     }
+  }
 
+  /** Initializate route * */
+  _initializeRouter() {
+    if (this.interceptor && typeof this.interceptor === 'function') {
+      this.Router.channelManager = this.BridgeChannelManager;
+      this.Router.interceptor = this.interceptor;
+    }
+
+    this.Router.handler = () => this.routeHandler();
+
+    if (Array.isArray(this.routes)) {
+      this.routes = this._parseRoutes(this.routes);
+    }
+    this.Router.addRoutes(this.routes);
+
+    if (this.skipNavigations && this.skipNavigations.length > 0) {
+      for (let i = 0; i < this.skipNavigations.length; i++) {
+        this.skipNavigations[i].skipHistory = true;
+      }
+      this.Router.addSkipNavigations(this.skipNavigations);
+    }
+
+    this.Router.start();
+  }
+
+  /** Initializate state and context * */
+  _initializeBridgeStatus() {
     this.BridgeChannelManager.initAppContextChannel();
     this.BridgeChannelManager.getCancelledBackNavigationChannel();
     this.BridgeChannelManager.getInterceptedNavigationChannel();
     this.ActionChannelManager.subscribeAll();
 
-    // Bridge is ready - execute queued bridge commands & load app config & state.
     this._executePendingBridgeQueue();
     this.ApplicationConfigManager.loadAppConfig();
     this.ApplicationStateManager.loadAppState();
+  }
 
-    // 1. Listen for route changes
-    // @TODO: Revisar este binding de un método de otro objeto a otro objeto
-    this.Router.handler = () => this.routeHandler();
-    if (Array.isArray(this.routes)) {
-      this.routes = this._parseRoutes(this.routes);
-    }
-    this.Router.addRoutes(this.routes);
-    this._initSkipNavigations();
-    this.Router.start();
+  /** Initialize listeners * */
+  _initializeEventListeners() {
+    const { NAV_REQUEST, ROUTER_BACKSTEP } = externalEventsCodes;
 
-    this.navRequestListener = (/*@type {WCEvent }*/ info) => {
+    this.navRequestListener = info => {
       if (this.Router.hashIsDirty) {
         window.location.hash = '#!';
       }
-      let event = info.event;
-      let navigationDetail = info.detail;
-      let page = navigationDetail.page;
-      let params = navigationDetail.params;
-      let skipHistory = navigationDetail.skipHistory;
-      let cleanUntil = navigationDetail.cleanUntil;
-      let replace = navigationDetail.replace || false;
+      const { event, detail: navigationDetail } = info;
+      let { page, params, skipHistory, cleanUntil, replace = false, paramPage } = navigationDetail;
+
       /** @type {{ [key: string]: any }} */
       let p = {};
 
-      if (!page && navigationDetail.paramPage && event.detail) {
-        page = event.detail[navigationDetail.paramPage];
+      if (!page && paramPage && event.detail) {
+        page = event.detail[paramPage];
       }
       if (event.detail && params) {
         for (let param in params) {
@@ -381,14 +617,10 @@ export class Bridge {
       }
 
       this.Router.go(page, p, replace, skipHistory);
-      Object.assign(this, config);
     };
 
     eventManager.on(NAV_REQUEST, this.navRequestListener);
-
-    eventManager.on(ROUTER_BACKSTEP, this.handleBack);
-
-    this.PostMessageManager.setupPostMessages();
+    eventManager.on(ROUTER_BACKSTEP, this.handleBack.bind(this));
   }
 
   /**
@@ -465,20 +697,6 @@ export class Bridge {
         queuedCommandFunction.apply(this, parameters);
       });
       $queueCommands = [];
-    }
-  }
-
-  /**
-   * Initializes the skip navigations feature. If there are skip navigations defined, it sets the
-   * skipHistory property to true for each skip navigation and adds them to the Router's skip
-   * navigations list.
-   */
-  _initSkipNavigations() {
-    if (this.skipNavigations && this.skipNavigations.length > 0) {
-      for (let i = 0; i < this.skipNavigations.length; i++) {
-        this.skipNavigations[i].skipHistory = true;
-      }
-      this.Router.addSkipNavigations(this.skipNavigations);
     }
   }
 
@@ -656,14 +874,6 @@ export class Bridge {
 
     // 3. Publish URL params to global params.
     for (let param in route.params) {
-      // let eventData = {
-      //   detail: {
-      //     value: route.params[param],
-      //   },
-      //   type: dasherize(param) + '-changed',
-      // };
-
-      // this.ComponentConnector.manager.get(param).next(eventData);
       const evt = eventManager.createEvent(dasherize(param) + '-changed', route.params[param]);
       this.ComponentConnector.getChannel(param).next(evt);
     }
@@ -798,7 +1008,7 @@ export class Bridge {
   }
 
   /**
-   * Navega a una página específica.
+   * Navigate to a specific page.
    *
    * @param {string} page - La página a la que se desea navegar.
    * @param {QueryParams} params - Los parámetros opcionales para la página.
@@ -1000,7 +1210,6 @@ export class Bridge {
       document.body.dispatchEvent(componentsInTemplateLoaded);
     }
   }
-
   /**
    * Loads the specified cells page.
    *
@@ -1027,5 +1236,16 @@ export class Bridge {
       routesObject[name] = { path, action, notFound: Boolean(notFound), component };
     });
     return routesObject;
+  }
+
+  /**
+   * Lazy loading of pages.
+   *
+   * @param {string[]} componentNames *
+   */
+  _lazyLoadPages(componentNames) {
+    componentNames.forEach(componentName => {
+      this.loadCellsPage(componentName);
+    });
   }
 }

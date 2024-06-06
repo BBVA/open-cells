@@ -1,73 +1,114 @@
-import { $bridge, enqueueCommand } from '@open-cells/core';
+/*
+ * Copyright 2024 Bilbao Vizcaya Argentaria, S.A.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 
-function __callBridge(...args) {
-  const [command, ...parameters] = args;
-  let result;
-
-  // cells is ready
-  if ($bridge) {
-    if (!$bridge[command]) {
-      throw new Error(`WARNING: Invalid cells bridge command execution: ${command}.`);
-    }
-
-    result = $bridge[command](...parameters);
-    return result;
-  }
-
-  enqueueCommand(command, parameters);
-  return result;
-}
-
+import { plugCellsCore } from '@open-cells/core-plugin';
 export class ElementController {
   constructor(host) {
+    this.subscriptions = [];
+    plugCellsCore(this);
+    this.subscribe = this.subscribe.bind(host);
+    this.unsubscribe = this.unsubscribe.bind(host);
+    this.publish = this.publish.bind(host);
     (this.host = host).addController(this);
+    this._definedBoundedProperties();
   }
 
-  subscribe(channelName, callback) {
-    __callBridge('registerInConnection', channelName, this.host, callback);
+  _definedBoundedProperties() {
+    const inbounds = this.host.constructor.inbounds;
+    const outbounds = this.host.constructor.outbounds;
+
+    if (!inbounds && !outbounds) {
+      return;
+    }
+
+    const inout = this._mergeBounds(inbounds, outbounds);
+
+    Object.keys(inout).forEach(key => {
+      let { output, input, skipUpdate, action } = inout[key];
+      this._inOut(key, output, input, (skipUpdate = false), action);
+    });
   }
 
-  unsubscribe(channels) {
-    __callBridge('unsubscribe', channels, this.host);
+  _mergeBounds(inbounds = {}, outbounds = {}) {
+    const inout = [];
+    Object.keys(inbounds).forEach(key => {
+      const { channel: input, skipUpdate, action } = inbounds[key];
+      inout[key] = { input, skipUpdate, action };
+    });
+    Object.keys(outbounds).forEach(key => {
+      const { channel: output } = outbounds[key];
+      let previous = inout[key] || {};
+      inout[key] = { ...previous, output };
+    });
+    return inout;
   }
 
-  publish(channelName, value, options = {}) {
-    __callBridge('publish', channelName, value, options);
+  _inOut(propertyName, outChannelName, inChannelName, skipUpdate = false, action) {
+    let internalValue;
+    let setter = value => {
+      internalValue = value;
+      this.publish(outChannelName, value);
+    };
+    let getter = () => {
+      return internalValue;
+    };
+
+    let internalSubscriberAction;
+    if (action && typeof action === 'function') {
+      internalSubscriberAction = value => {
+        internalValue = action(value);
+        if (!skipUpdate) {
+          this.host.requestUpdate();
+        }
+      };
+    } else {
+      internalSubscriberAction = value => {
+        internalValue = value;
+        if (!skipUpdate) {
+          this.host.requestUpdate();
+        }
+      };
+    }
+
+    this.subscriptions.push({ channel: inChannelName, action: internalSubscriberAction });
+    if (outChannelName) {
+      Object.defineProperties(this.host, {
+        [propertyName]: {
+          get: getter,
+          set: setter,
+        },
+      });
+    } else {
+      Object.defineProperties(this.host, {
+        [propertyName]: {
+          get: getter,
+        },
+      });
+    }
   }
 
-  publishOn(channelName, htmlElement, eventName) {
-    __callBridge('registerOutConnection', channelName, htmlElement, eventName);
+  hostConnected() {
+    for (const subscription of this.subscriptions) {
+      this.subscribe(subscription.channel, subscription.action);
+    }
   }
 
-  navigate(page, params) {
-    __callBridge('navigate', page, params);
-  }
-
-  updateInterceptorContext(ctx) {
-    __callBridge('updateInterceptorContext', ctx);
-  }
-
-  resetInterceptorContext() {
-    __callBridge('resetInterceptorContext');
-  }
-
-  getInterceptorContext() {
-    return __callBridge('getInterceptorContext');
-  }
-
-  setInterceptorContext(ctx) {
-    __callBridge('setInterceptorContext', ctx);
-  }
-
-  getCurrentRoute() {
-    __callBridge('getCurrentRoute');
-  }
-
-  updateSubroute(subroute) {
-    __callBridge('updateSubroute', subroute);
-  }
-
-  backStep() {
-    __callBridge('backStep');
+  hostDisconnected() {
+    for (const subscription of this.subscriptions) {
+      this.unsubscribe(subscription.channel);
+    }
   }
 }

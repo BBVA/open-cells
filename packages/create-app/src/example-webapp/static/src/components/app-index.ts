@@ -15,6 +15,7 @@ startApp({
   viewLimit: 2,
   persistentPages: ['recipe'],
   appConfig,
+  commonPages: ['category', 'recipe']
 });
 
 @customElement('app-index')

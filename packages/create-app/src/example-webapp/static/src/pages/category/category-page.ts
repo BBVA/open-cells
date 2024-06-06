@@ -23,8 +23,10 @@ export class CategoryPage extends PageTransitionsMixin(LitElement) {
     return this.shadowRoot || this;
   }
 
-  @state()
-  protected _categoriesList: Array<any> | null = null;
+  static inbounds = {
+    _categoriesList: { channel: 'categories' },
+    _likedRecipes: { channel: 'liked-recipes' },
+  };
 
   @state()
   protected _currentCategory: Category | null = null;
@@ -33,37 +35,17 @@ export class CategoryPage extends PageTransitionsMixin(LitElement) {
   protected _recipesList: { [key: string]: any } | null = null;
 
   @state()
-  protected _likedRecipes: Set<Recipe> = new Set();
-
-  @state()
   protected _layout: PageLayout | null = null;
 
   @property({ type: Object })
   params: { category?: string } = {};
 
-  connectedCallback() {
-    super.connectedCallback();
-
-    this.pageController.subscribe('categories', (data: Array<Category>) => {
-      this._categoriesList = data;
-    });
-
-    this.pageController.subscribe('liked-recipes', (data: Set<Recipe>) => {
-      this._likedRecipes = data;
-    });
-  }
-
-  disconnectedCallback() {
-    this.pageController.unsubscribe('categories');
-    this.pageController.unsubscribe('liked-recipes');
-    super.disconnectedCallback();
-  }
-
   willUpdate(props: any) {
     super.willUpdate?.(props);
     if (props.has('params') || props.has('_categoriesList')) {
       this._currentCategory = this._categoriesList?.find(
-        category => category.strCategory?.toLowerCase() === this.params.category?.toLowerCase(),
+        (category: { strCategory: string }) =>
+          category.strCategory?.toLowerCase() === this.params.category?.toLowerCase(),
       );
       if (this._currentCategory) {
         this._getCurrentCategoryRecipes(this._currentCategory.strCategory);

@@ -16,3 +16,6 @@ server
 /playwright/.cache/
 /packages/example/*
 !/packages/example/recipes-app/
+/packages/example/recipes-app/types/
+!/packages/example/blank-app/
+/packages/example/blank-app/types/

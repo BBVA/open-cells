@@ -1,0 +1,24 @@
+{
+  "name": "@open-cells/core-plugin",
+  "version": "1.1.1",
+  "main": "index.js",
+  "types": "/types/index.d.ts",
+  "scripts": {
+    "build": "echo \"Building element...\""
+  },
+  "keywords": [],
+  "author": "",
+  "license": "Apache-2.0",
+  "description": "",
+  "dependencies": {
+    "@open-cells/core": "^1.0.1"
+  },
+  "files": [
+    "/src/",
+    "*.js",
+    "/types/index.d.ts"
+  ],
+  "publishConfig": {
+    "access": "public"
+  }
+}

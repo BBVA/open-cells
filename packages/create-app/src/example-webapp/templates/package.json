@@ -1,6 +1,6 @@
 {
   "name": "<%= name %>",
-  "version": "0.1.0",
+  "version": "0.2.1",
   "private": true,
   "description": "An example application built using Lit and Open Cells",
   "license": "Apache-2.0",
@@ -10,21 +10,21 @@
   },
   "type": "module",
   "scripts": {
-    "start": "npm run serve",
-    "serve": "vite",
+    "dev": "vite",
     "build": "tsc && vite build",
     "preview": "npm run build && vite preview"
   },
   "dependencies": {
-    "@material/web": "^1.4.0",
-    "@open-cells/core": "^1.0.0-beta.2",
-    "@open-cells/element-controller": "^1.0.0-beta.3",
-    "@open-cells/page-controller": "^1.0.0-beta.3",
-    "@open-cells/page-transitions": "^1.0.0-beta.1",
+    "@material/web": "^1.2.0",
+    "@open-cells/core": "^1.0.1",
+    "@open-cells/page-mixin": "^1.1.1",
+    "@open-cells/element-controller": "^1.0.1",
+    "@open-cells/page-controller": "^1.0.1",
+    "@open-cells/page-transitions": "^1.0.1",
     "lit": "^3.0.0"
   },
   "devDependencies": {
-    "typescript": "^5.4.5",
+    "typescript": "^5.3.3",
     "vite": "^5.2.7"
   }
 }

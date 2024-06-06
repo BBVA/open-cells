@@ -1,0 +1,45 @@
+{
+  "name": "@open-cells/localize",
+  "version": "1.1.1",
+  "description": "Provides internationalization, localization and formatting capabilities for Web Components through the intl messageformat library.",
+  "keywords": [
+    "intl",
+    "i18n",
+    "locales",
+    "locale",
+    "internationalization",
+    "localization",
+    "localize",
+    "IntlMsg",
+    "messageformat",
+    "translation",
+    "mixin"
+  ],
+  "exports": {
+    ".": "./index.js"
+  },
+  "main": "index.js",
+  "type": "module",
+  "files": [
+    "/src/"
+  ],
+  "scripts": {
+    "dev": "vite",
+    "test": "web-test-runner"
+  },
+  "dependencies": {
+    "@open-wc/dedupe-mixin": "^1.4.0",
+    "intl-messageformat": "^10.5.11"
+  },
+  "devDependencies": {
+    "@open-wc/testing": "^4.0.0",
+    "@web/test-runner": "^0.18.0",
+    "@web/test-runner-playwright": "^0.11.0",
+    "lit": "^3.1.2",
+    "sinon": "^17.0.1",
+    "vite": "^5.2.7"
+  },
+  "publishConfig": {
+    "access": "public"
+  }
+}
