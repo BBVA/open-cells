@@ -24,7 +24,7 @@ import { BRIDGE_CHANNEL_PREFIX } from '../constants';
  *
  * @typedef {import('../../types').NodeChannelRecord} NodeChannelRecord
  *
- * @typedef {import('../../types').Channel} Channel
+ * @typedef {import('./channel').Channel} Channel
  *
  * @typedef {import('../../types').WrappedEventForPublication} WrappedEventForPublication
  *

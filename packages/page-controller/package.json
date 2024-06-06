@@ -1,6 +1,6 @@
 {
   "name": "@open-cells/page-controller",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "scripts": {
     "build": "echo \"Building page...\""
   },
@@ -15,7 +15,7 @@
   ],
   "main": "index.js",
   "dependencies": {
-    "@open-cells/element-controller": "^1.0.0"
+    "@open-cells/element-controller": "^1.0.1"
   },
   "description": "",
   "publishConfig": {

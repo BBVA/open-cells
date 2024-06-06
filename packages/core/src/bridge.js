@@ -53,7 +53,7 @@ import { BRIDGE_CHANNEL_PREFIX } from './constants';
  *
  * @typedef {import('../types').AugmentedFunction} AugmentedFunction
  *
- * @typedef {import('../types').Route} Route
+ * @typedef {import('./route').Route} Route
  *
  * @typedef {import('../types').RouteData} RouteData
  *
@@ -1008,7 +1008,7 @@ export class Bridge {
   }
 
   /**
-   * navigate to a specific page.
+   * Navigate to a specific page.
    *
    * @param {string} page - La página a la que se desea navegar.
    * @param {QueryParams} params - Los parámetros opcionales para la página.

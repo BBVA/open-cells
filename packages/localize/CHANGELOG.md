@@ -1,6 +1,6 @@
-# Cells create-app
+# @open-cells/localize
 
-## 1.0.2
+## 1.1.1
 
 ### Patch Changes
 

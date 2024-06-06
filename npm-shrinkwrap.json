@@ -5484,6 +5484,10 @@
       "integrity": "sha512-v4N2l3RxL+m4zDxyxz3Ne2aTmiPn8ZUpKFpdPtO+ItW1NcTCXA7JeHG5GMBSvoKSkQZ9ycS+EouDVxYB9ufKWA==",
       "dev": true
     },
+    "node_modules/blank-app": {
+      "resolved": "packages/example/blank-app",
+      "link": true
+    },
     "node_modules/brace-expansion": {
       "version": "2.0.1",
       "resolved": "https://registry.npmjs.org/brace-expansion/-/brace-expansion-2.0.1.tgz",
@@ -13576,7 +13580,7 @@
     },
     "packages/create-app": {
       "name": "@open-cells/create-app",
-      "version": "0.15.0",
+      "version": "1.0.0",
       "license": "MIT",
       "dependencies": {
         "@open-wc/create": "^0.37.95",
@@ -13831,6 +13835,24 @@
         "@open-cells/core-plugin": "^1.1.0"
       }
     },
+    "packages/example/blank-app": {
+      "version": "0.1.0",
+      "license": "Apache-2.0",
+      "dependencies": {
+        "@open-cells/core": "^1.0.0",
+        "@open-cells/element-controller": "^1.0.0",
+        "@open-cells/page-controller": "^1.0.0",
+        "lit": "^3.0.0"
+      },
+      "devDependencies": {
+        "typescript": "^5.4.5",
+        "vite": "^5.2.7"
+      },
+      "engines": {
+        "node": ">=18.15.0",
+        "npm": ">=7.0.0"
+      }
+    },
     "packages/example/recipes-app": {
       "name": "@open-cells/recipes-app",
       "version": "0.2.0",
@@ -13840,7 +13862,7 @@
         "@open-cells/core": "^1.0.0",
         "@open-cells/element-controller": "^1.0.0",
         "@open-cells/page-controller": "^1.0.0",
-        "@open-cells/page-mixin": "1.1.0",
+        "@open-cells/page-mixin": "^1.1.0",
         "@open-cells/page-transitions": "^1.0.0",
         "lit": "^3.0.0"
       },

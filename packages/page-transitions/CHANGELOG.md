@@ -1,6 +1,6 @@
-# Cells create-app
+# @open-cells/page-transitions
 
-## 1.0.2
+## 1.0.1
 
 ### Patch Changes
 
