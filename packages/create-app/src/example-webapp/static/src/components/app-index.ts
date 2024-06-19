@@ -24,7 +24,7 @@ export class AppIndex extends LitElement {
 
   private _header: HTMLElement | undefined | null = null;
   private _root: HTMLElement | null = null;
-
+  
   static styles = styles;
 
   @state()

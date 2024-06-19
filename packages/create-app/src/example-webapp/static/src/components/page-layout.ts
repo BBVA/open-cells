@@ -6,7 +6,7 @@ import { styles } from './page-layout.css';
 @customElement('page-layout')
 export class PageLayout extends LitElement {
   elementController = new ElementController(this);
-  
+
   private _scroller: HTMLElement | undefined | null = null;
 
   static styles = styles;
@@ -15,6 +15,7 @@ export class PageLayout extends LitElement {
     super.firstUpdated(props);
 
     this._scroller = this.shadowRoot?.querySelector('.scroller');
+
     this._scroller?.addEventListener('scroll', ev => {
       this.elementController.publish('scroll', {
         scrollTop: (ev.target as HTMLElement)?.scrollTop,

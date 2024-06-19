@@ -1,6 +1,6 @@
 {
   "name": "@open-cells/create-app",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "description": "Scaffold for Open Cells apps",
   "license": "MIT",
   "type": "module",

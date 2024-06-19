@@ -1,5 +1,13 @@
 # @open-cells/recipes-app
 
+## 0.2.2
+
+### Patch Changes
+
+- 1210153: fix: use of bound properties
+- Updated dependencies [1210153]
+  - @open-cells/element-controller@1.0.2
+
 ## 0.2.1
 
 ### Patch Changes

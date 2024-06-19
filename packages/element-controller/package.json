@@ -1,6 +1,6 @@
 {
   "name": "@open-cells/element-controller",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "main": "index.js",
   "types": "types/index.d.ts",
   "scripts": {

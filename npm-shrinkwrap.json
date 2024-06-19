@@ -13580,7 +13580,7 @@
     },
     "packages/create-app": {
       "name": "@open-cells/create-app",
-      "version": "1.0.2",
+      "version": "1.0.3",
       "license": "MIT",
       "dependencies": {
         "@open-wc/create": "^0.37.95",
@@ -13829,7 +13829,7 @@
     },
     "packages/element-controller": {
       "name": "@open-cells/element-controller",
-      "version": "1.0.1",
+      "version": "1.0.2",
       "license": "Apache-2.0",
       "dependencies": {
         "@open-cells/core-plugin": "^1.1.1"
@@ -13855,12 +13855,12 @@
     },
     "packages/example/recipes-app": {
       "name": "@open-cells/recipes-app",
-      "version": "0.2.1",
+      "version": "0.2.2",
       "license": "Apache-2.0",
       "dependencies": {
         "@material/web": "^1.2.0",
         "@open-cells/core": "^1.0.1",
-        "@open-cells/element-controller": "^1.0.1",
+        "@open-cells/element-controller": "^1.0.2",
         "@open-cells/page-controller": "^1.0.1",
         "@open-cells/page-mixin": "^1.1.1",
         "@open-cells/page-transitions": "^1.0.1",
