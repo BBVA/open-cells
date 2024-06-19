@@ -14,6 +14,8 @@ import { PageLayout } from '../../components/page-layout.js';
 export class FavoriteRecipesPage extends PageTransitionsMixin(LitElement) {
   pageController = new PageController(this);
 
+  private _layout: PageLayout | null = null;
+
   protected createRenderRoot(): HTMLElement | DocumentFragment {
     // @ts-ignore
     return this;
@@ -21,9 +23,6 @@ export class FavoriteRecipesPage extends PageTransitionsMixin(LitElement) {
 
   @state()
   protected _likedRecipes: Set<Recipe> | null = null;
-
-  @state()
-  protected _layout: PageLayout | null = null;
 
   connectedCallback() {
     super.connectedCallback();

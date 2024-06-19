@@ -13546,7 +13546,7 @@
     },
     "packages/core": {
       "name": "@open-cells/core",
-      "version": "1.0.0",
+      "version": "1.0.1",
       "hasInstallScript": true,
       "dependencies": {
         "rxjs": "8.0.0-alpha.12"
@@ -13572,15 +13572,15 @@
     },
     "packages/core-plugin": {
       "name": "@open-cells/core-plugin",
-      "version": "1.1.0",
+      "version": "1.1.1",
       "license": "Apache-2.0",
       "dependencies": {
-        "@open-cells/core": "^1.0.0"
+        "@open-cells/core": "^1.0.1"
       }
     },
     "packages/create-app": {
       "name": "@open-cells/create-app",
-      "version": "1.0.0",
+      "version": "1.0.2",
       "license": "MIT",
       "dependencies": {
         "@open-wc/create": "^0.37.95",
@@ -13829,19 +13829,19 @@
     },
     "packages/element-controller": {
       "name": "@open-cells/element-controller",
-      "version": "1.0.0",
+      "version": "1.0.1",
       "license": "Apache-2.0",
       "dependencies": {
-        "@open-cells/core-plugin": "^1.1.0"
+        "@open-cells/core-plugin": "^1.1.1"
       }
     },
     "packages/example/blank-app": {
-      "version": "0.1.0",
+      "version": "0.1.1",
       "license": "Apache-2.0",
       "dependencies": {
-        "@open-cells/core": "^1.0.0",
-        "@open-cells/element-controller": "^1.0.0",
-        "@open-cells/page-controller": "^1.0.0",
+        "@open-cells/core": "^1.0.1",
+        "@open-cells/element-controller": "^1.0.1",
+        "@open-cells/page-controller": "^1.0.1",
         "lit": "^3.0.0"
       },
       "devDependencies": {
@@ -13855,15 +13855,15 @@
     },
     "packages/example/recipes-app": {
       "name": "@open-cells/recipes-app",
-      "version": "0.2.0",
+      "version": "0.2.1",
       "license": "Apache-2.0",
       "dependencies": {
         "@material/web": "^1.2.0",
-        "@open-cells/core": "^1.0.0",
-        "@open-cells/element-controller": "^1.0.0",
-        "@open-cells/page-controller": "^1.0.0",
-        "@open-cells/page-mixin": "^1.1.0",
-        "@open-cells/page-transitions": "^1.0.0",
+        "@open-cells/core": "^1.0.1",
+        "@open-cells/element-controller": "^1.0.1",
+        "@open-cells/page-controller": "^1.0.1",
+        "@open-cells/page-mixin": "^1.1.1",
+        "@open-cells/page-transitions": "^1.0.1",
         "lit": "^3.0.0"
       },
       "devDependencies": {
@@ -13877,7 +13877,7 @@
     },
     "packages/localize": {
       "name": "@open-cells/localize",
-      "version": "1.1.0",
+      "version": "1.1.1",
       "dependencies": {
         "@open-wc/dedupe-mixin": "^1.4.0",
         "intl-messageformat": "^10.5.11"
@@ -13893,17 +13893,17 @@
     },
     "packages/page-controller": {
       "name": "@open-cells/page-controller",
-      "version": "1.0.0",
+      "version": "1.0.1",
       "license": "Apache-2.0",
       "dependencies": {
-        "@open-cells/element-controller": "^1.0.0"
+        "@open-cells/element-controller": "^1.0.1"
       }
     },
     "packages/page-mixin": {
       "name": "@open-cells/page-mixin",
-      "version": "1.1.0",
+      "version": "1.1.1",
       "dependencies": {
-        "@open-cells/core-plugin": "^1.1.0",
+        "@open-cells/core-plugin": "^1.1.1",
         "@open-wc/dedupe-mixin": "^1.4.0"
       },
       "devDependencies": {
@@ -14058,7 +14058,7 @@
     },
     "packages/page-transitions": {
       "name": "@open-cells/page-transitions",
-      "version": "1.0.0",
+      "version": "1.0.1",
       "license": "Apache-2.0",
       "dependencies": {
         "@open-wc/dedupe-mixin": "^1.4.0",

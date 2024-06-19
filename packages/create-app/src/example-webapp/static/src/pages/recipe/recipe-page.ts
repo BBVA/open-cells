@@ -16,6 +16,7 @@ export class RecipePage extends PageTransitionsMixin(LitElement) {
   pageController = new PageController(this);
 
   private _recipeInstructions: string[] = [];
+  private _layout: PageLayout | null = null;
 
   protected createRenderRoot(): HTMLElement | DocumentFragment {
     // @ts-ignore
@@ -27,9 +28,6 @@ export class RecipePage extends PageTransitionsMixin(LitElement) {
 
   @state()
   protected _likedRecipes: Set<Recipe> | null = null;
-
-  @state()
-  protected _layout: PageLayout | null = null;
 
   @property({ type: Object })
   params: { recipeId?: string } = {};

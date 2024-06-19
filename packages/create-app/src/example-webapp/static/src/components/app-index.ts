@@ -22,13 +22,10 @@ startApp({
 export class AppIndex extends LitElement {
   elementController = new ElementController(this);
 
+  private _header: HTMLElement | undefined | null = null;
+  private _root: HTMLElement | null = null;
+
   static styles = styles;
-
-  @state()
-  protected _header: HTMLElement | undefined | null = null;
-
-  @state()
-  protected _root: HTMLElement | null = null;
 
   @state()
   protected _likedRecipes = this._getLocalStorage();

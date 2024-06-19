@@ -1,16 +1,15 @@
 import { LitElement, html } from 'lit';
-import { customElement, state } from 'lit/decorators.js';
+import { customElement } from 'lit/decorators.js';
 import { ElementController } from '@open-cells/element-controller';
 import { styles } from './page-layout.css';
 
 @customElement('page-layout')
 export class PageLayout extends LitElement {
   elementController = new ElementController(this);
+  
+  private _scroller: HTMLElement | undefined | null = null;
 
   static styles = styles;
-
-  @state()
-  protected _scroller: HTMLElement | undefined | null = null;
 
   firstUpdated(props: any) {
     super.firstUpdated(props);
