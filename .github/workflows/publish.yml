@@ -1,60 +1,36 @@
 name: Publish to NPM
+
 on:
   release:
     types: [created]
+
 jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout
+      - name: Checkout repository
         uses: actions/checkout@v4
-      - name: Setup Node
+
+      - name: Set up Node.js
         uses: actions/setup-node@v4
         with:
           node-version: '20'
           registry-url: 'https://registry.npmjs.org'
+
       - name: Install dependencies and build
         run: |
           npm i --package-lock-only
           npm ci 
           npm run build --if-present
-      - name: Publish core package on NPM.js
-        working-directory: ./packages/core
-        run: npm publish
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_PUBLISH_TOKEN }}
-      - name: Publish core-plugin package on NPM.js
-        working-directory: ./packages/core-plugin
-        run: npm publish
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_PUBLISH_TOKEN }}
-      - name: Publish element-controller package on NPM.js
-        working-directory: ./packages/element-controller
-        run: npm publish
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_PUBLISH_TOKEN }}
-      - name: Publish page-controller package on NPM.js
-        working-directory: ./packages/page-controller
-        run: npm publish
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_PUBLISH_TOKEN }}
-      - name: Publish page-mixin package on NPM.js
-        working-directory: ./packages/page-mixin
-        run: npm publish
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_PUBLISH_TOKEN }}
-      - name: Publish page-transitions package on NPM.js
-        working-directory: ./packages/page-transitions
-        run: npm publish
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_PUBLISH_TOKEN }}
-      - name: Publish localize package on NPM.js
-        working-directory: ./packages/localize
-        run: npm publish
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_PUBLISH_TOKEN }}
-      - name: Publish create-app package on NPM.js
-        working-directory: ./packages/create-app
-        run: npm publish
+
+      - name: Create .npmrc file
+        run: |
+          echo "//registry.npmjs.org/:_authToken=${{ secrets.NPM_PUBLISH_TOKEN }}" > .npmrc
+
+      - name: Install Changesets CLI
+        run: npm install -g @changesets/cli
+
+      - name: Publish packages
+        run: changeset publish
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_PUBLISH_TOKEN }}
