@@ -18,7 +18,13 @@ import { fromEvent } from 'rxjs';
 import { eventManager } from './manager/events.js';
 import { Subscriptor } from './state/index.js';
 import { Constants } from './constants.js';
-import { ElementAdapter } from './adapter/element-adapter.js';
+import {
+  dispatchNodeFunction,
+  dispatchNodeProperty,
+  elementHasBeenResolved,
+  isEventAtTarget,
+  whenElementDefined
+} from './adapter/element.js';
 import { ChannelManager } from './manager/channel-manager.js';
 import { BRIDGE_CHANNEL_PREFIX } from './constants.js';
 
@@ -49,6 +55,57 @@ import { BRIDGE_CHANNEL_PREFIX } from './constants.js';
 /** @constant externalEventsCodes */
 const { externalEventsCodes } = Constants;
 
+function requestIdleCallbackImpl(cb) {
+  if ('requestIdleCallback' in window) {
+    window.requestIdleCallback(cb);
+  } else {
+    setTimeout(cb, 0);
+  }
+}
+
+/**
+ * Dispatch a given bindign action to a target node
+ * @param {Element} node
+ * @param {Binding} binding
+ * @param {CustomEvent} e
+ */
+function dispatchNodeAction(node, binding, e) {
+  if (typeof binding === 'function') {
+    binding(e.detail);
+  } else if (typeof node[binding] === 'function'){
+    dispatchNodeFunction(node, binding, e);
+  } else {
+    dispatchNodeProperty(node, binding, e);
+  }
+}
+
+/**
+ * Creates an action to be dispatched to a given node, if node is not already
+ * registered, action will be delayed until element can be resolved
+ * @param {Element} node
+ * @param {Binding} binding
+ */
+function createNodeAction(node, binding) {
+  let action =  (/** @type {CustomEvent} */e) => {
+    if (!elementHasBeenResolved(node)) {
+      // TODO: is requestIdleCallback needed to delay executon after custom element registration?
+      whenElementDefined(node, requestIdleCallbackImpl(() => {
+        dispatchNodeAction(node, binding, e);
+      }));
+    } else {
+      dispatchNodeAction(node, binding, e);
+    }
+  }
+
+  // REVIEW: check if this does not override the node property set in the subscribe method
+  Object.defineProperty(action, /** @type {WCNode} */ 'node', {
+    writable: true,
+    configurable: true,
+    enumerable: true,
+  });
+  return action;
+}
+
 /**
  * Represents a Component Connector that manages subscriptions and publications between components.
  *
@@ -57,13 +114,6 @@ const { externalEventsCodes } = Constants;
 export class ComponentConnector {
   /** Creates a new instance of ComponentConnector. */
   constructor() {
-    /**
-     * The adapter for element.
-     *
-     * @type {ElementAdapter}
-     */
-    this.adapter = new ElementAdapter(this);
-
     /**
      * The channel manager used to manage channels.
      *
@@ -114,12 +164,12 @@ export class ComponentConnector {
    * @param {boolean} [previousState=false] - The previous state flag. Default is `false`
    */
   addSubscription(channelName, node, bind, previousState = false) {
-    const callback = this._wrapCallbackWithNode(node, bind);
     const channel = this.manager.get(channelName);
 
     if (channel) {
       const subscriptor = this.getSubscriptor(node);
-      subscriptor.subscribe(channel, callback, previousState, bind);
+      const action = createNodeAction(node, bind)
+      subscriptor.subscribe(channel, action, previousState, bind);
     }
   }
 
@@ -172,92 +222,10 @@ export class ComponentConnector {
       (!this.isActiveBridgeChannel(channelName) && !this.hasSubscriptions(subscriptor, channelName))
     ) {
       const channel = this.manager.get(channelName);
-      const callback = this._wrapCallbackWithNode(node, bind);
+      const action = createNodeAction(node, bind);
 
-      subscriptor.subscribe(channel, callback, previousState, bind);
+      subscriptor.subscribe(channel, action, previousState, bind);
     }
-  }
-
-  /**
-   * Wrap a callback function with the given node and bind name.
-   *
-   * @param {WCNode} node - The node to wrap the callback with.
-   * @param {Binding} bindName - The bind name.
-   * @returns {AugmentedFunction} The wrapped callback function.
-   */
-  _wrapCallbackWithNode(node, bindName) {
-    //let cb = this.wrapCallback(node, bindName);
-    //cb.node = node;
-    //return cb;
-    return this.wrapCallback(node, bindName);
-  }
-
-  /**
-   * Wrap a callback function with the given node and bind name.
-   *
-   * @param {IndexableHTMLElement} node - The node to wrap the callback with.
-   * @param {Binding} bindName - The bind name.
-   * @returns {AugmentedFunction} The wrapped callback function. re t urns {function(Event): void} -
-   *   The wrapped callback function that expects an Event parameter and returns void.
-   */
-  wrapCallback(node, bindName) {
-    const _idleCallback = (/** @type IdleRequestCallback */ fn) => {
-      setTimeout(function () {
-        if ('requestIdleCallback' in window) {
-          window.requestIdleCallback(fn);
-        } else {
-          setTimeout(fn, 1);
-        }
-      }, 100);
-    };
-
-    /**
-     * @param {WCEvent} evt - The event.
-     * @returns {void}
-     */
-    const wrappedCallback = evt => {
-      /**
-       * @param {MutationRecord[]} mutationsList - The mutations that were observed.
-       * @param {MutationObserver} observerObject - The MutationObserver instance.
-       * @returns {void}
-       */
-      const checkComponentResolution = (mutationsList, observerObject) => {
-        if (!this.adapter.isUnresolved(node)) {
-          checkDispatchActionType();
-
-          if (observerObject) {
-            observerObject.disconnect();
-          }
-        } else {
-          _idleCallback(checkDispatchActionType);
-        }
-      };
-
-      const checkDispatchActionType = () => {
-        if (typeof bindName === 'function' || typeof node[bindName] === 'function') {
-          this.adapter.dispatchActionFunction(evt, node, bindName);
-        } else {
-          this.adapter.dispatchActionProperty(evt, node, bindName);
-        }
-      };
-
-      if (this.adapter.isUnresolved(node)) {
-        var observer = new MutationObserver(checkComponentResolution);
-        var config = { attributes: false, childList: true, characterData: true };
-        observer.observe(node, config);
-        _idleCallback(checkDispatchActionType);
-      } else {
-        checkDispatchActionType();
-      }
-    };
-
-    // REVIEW: check if this does not override the node property set in the subscribe method
-    Object.defineProperty(wrappedCallback, /** @type {WCNode} */ 'node', {
-      writable: true,
-      configurable: true,
-      enumerable: true,
-    });
-    return wrappedCallback;
   }
 
   /**
@@ -400,7 +368,7 @@ export class ComponentConnector {
 
     /** @type {Subscription} */
     const wrappedListener = source.subscribe((/** @type {WCEvent} */ event) => {
-      if (!this.adapter.isEventAtTarget(event)) {
+      if (isEventAtTarget(event)) {
         // If the event bubbles up from a child element:
         return;
       }
