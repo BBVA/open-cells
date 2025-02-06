@@ -13,11 +13,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
-import { Observable, fromEvent } from 'rxjs';
-import { first } from 'rxjs/operators';
+import { fromEvent } from 'rxjs';
 import { eventManager } from './events';
-import { BRIDGE_CHANNEL_PREFIX } from '../constants';
 
 /**
  * @typedef {import('../../types').AugmentedFunction} AugmentedFunction
@@ -65,6 +62,7 @@ export class BridgeChannelManager {
   constructor(bridge) {
     this.componentConnector = bridge.ComponentConnector;
     this.privateChannels = new Set();
+    this.channelPrefix = bridge.channelPrefix;
   }
 
   /**
@@ -73,7 +71,7 @@ export class BridgeChannelManager {
    * @returns {string} The application context channel name.
    */
   getAppContextChannelName() {
-    return `${BRIDGE_CHANNEL_PREFIX}_app`;
+    return `${this.channelPrefix}_app`;
   }
 
   /**
@@ -82,7 +80,7 @@ export class BridgeChannelManager {
    * @returns {string} The cancelled back navigation channel name.
    */
   getCancelledBackNavigationChannelName() {
-    return `${BRIDGE_CHANNEL_PREFIX}_cancelled_back_navigation`;
+    return `${this.channelPrefix}_cancelled_back_navigation`;
   }
 
   /**
@@ -91,7 +89,7 @@ export class BridgeChannelManager {
    * @returns {string} The intercepted navigation channel name.
    */
   getInterceptedNavigationChannelName() {
-    return `${BRIDGE_CHANNEL_PREFIX}_intercepted_navigation`;
+    return `${this.channelPrefix}_intercepted_navigation`;
   }
 
   /**
@@ -100,7 +98,7 @@ export class BridgeChannelManager {
    * @returns {string} The private channel prefix.
    */
   getPrivateChannelPrefix() {
-    return `${BRIDGE_CHANNEL_PREFIX}_page_`;
+    return `${this.channelPrefix}_page_`;
   }
 
   /**
@@ -109,7 +107,7 @@ export class BridgeChannelManager {
    * @returns {string} The event channel prefix.
    */
   getEventChannelPrefix() {
-    return `${BRIDGE_CHANNEL_PREFIX}_evt_`;
+    return `${this.channelPrefix}_evt_`;
   }
 
   /**
@@ -118,7 +116,7 @@ export class BridgeChannelManager {
    * @returns {string} The bridge channel prefix.
    */
   getBridgeChannelPrefix() {
-    return `${BRIDGE_CHANNEL_PREFIX}_ch_`;
+    return `${this.channelPrefix}_ch_`;
   }
 
   /**
@@ -127,7 +125,7 @@ export class BridgeChannelManager {
    * @returns {string} The post message channel prefix.
    */
   getPostMessageChannelPrefix() {
-    return `${BRIDGE_CHANNEL_PREFIX}_post_message_`;
+    return `${this.channelPrefix}_post_message_`;
   }
 
   /**
@@ -140,17 +138,6 @@ export class BridgeChannelManager {
     // return this.componentConnector.manager.get(this.getBridgeChannelPrefix() + channelName);
     return this.componentConnector.getChannel(this.getBridgeChannelPrefix() + channelName);
   }
-
-  // /**
-  //  * Gets the idle callback channel.
-  //  *
-  //  * @returns {Observable<boolean>} The idle callback channel.
-  //  */
-  // getIdleCallbackChannel() {
-  //   const idleChannel$ = new Observable(observer => observer.next(true));
-
-  //   return idleChannel$.pipe(first());
-  // }
 
   /**
    * Gets the application context channel.

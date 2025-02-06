@@ -1,7 +1,7 @@
 import { html, LitElement } from 'lit';
 import { PageController } from '@open-cells/page-controller';
 import { PageTransitionsMixin } from '@open-cells/page-transitions';
-import { customElement, state } from 'lit/decorators.js';
+import { customElement } from 'lit/decorators.js';
 import '@material/web/button/outlined-button.js';
 import '@material/web/icon/icon.js';
 import '../../components/page-layout.js';
@@ -12,8 +12,7 @@ import { PageLayout } from '../../components/page-layout.js';
 export class NotFoundPage extends PageTransitionsMixin(LitElement) {
   pageController = new PageController(this);
 
-  @state()
-  protected _layout: PageLayout | null = null;
+  private _layout: PageLayout | null = null;
 
   firstUpdated(props: any) {
     super.firstUpdated?.(props);

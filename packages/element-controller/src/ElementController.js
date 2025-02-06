@@ -38,7 +38,7 @@ export class ElementController {
 
     Object.keys(inout).forEach(key => {
       let { output, input, skipUpdate, action } = inout[key];
-      this._inOut(key, output, input, (skipUpdate = false), action);
+      this._inOut(key, output, input, skipUpdate, action);
     });
   }
 

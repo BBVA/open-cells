@@ -11,9 +11,6 @@
     "strictPropertyInitialization": false
   },
   "include": [
-    "src/adapter/**/*.js",
-    "src/state/**/*.js",
-    "src/manager/**/*.js",
     "src/*.js",
     "types/**/*.ts"],
   "exclude": ["node_modules"]

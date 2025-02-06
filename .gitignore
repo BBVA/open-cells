@@ -19,3 +19,4 @@ server
 /packages/example/recipes-app/types/
 !/packages/example/blank-app/
 /packages/example/blank-app/types/
+!/packages/example/bbva-mobile-app/

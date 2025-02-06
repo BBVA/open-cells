@@ -17,6 +17,7 @@
 export {
   $bridge,
   Bridge,
+  enqueueCommand,
   startApp,
   getConfig,
   subscribe,

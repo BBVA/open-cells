@@ -14,92 +14,103 @@
  * limitations under the License.
  */
 
-import {
-  subscribe,
-  unsubscribe,
-  publish,
-  publishOn,
-  navigate,
-  updateInterceptorContext,
-  resetInterceptorContext,
-  getInterceptorContext,
-  setInterceptorContext,
-  getCurrentRoute,
-  updateSubroute,
-  backStep,
-} from '@open-cells/core';
+import { enqueueCommand, $bridge } from '@open-cells/core';
 
 const services = {};
+export class CorePlugin {
+  /**
+   * Calls a command on the bridge with the provided parameters. If the bridge is not ready, the
+   * command is enqueued to be executed later.
+   *
+   * @param {...any} args - The arguments to pass to the bridge command. The first argument is the
+   *   command name, and the rest are the parameters for the command.
+   * @returns {any} The result of the bridge command, or undefined if the bridge is not ready.
+   * @throws {Error} If the bridge is ready but the command does not exist on the bridge.
+   */
+  __callBridge(...args) {
+    const [command, ...parameters] = args;
+    let result;
 
-services['subscribe'] = function (channelName, callback) {
-  subscribe(channelName, this, callback);
-};
+    // cells is ready
+    if ($bridge) {
+      // @ts-ignore
+      if (!$bridge[command]) {
+        throw new Error(`WARNING: Invalid cells bridge command execution: ${command}.`);
+      }
+      // @ts-ignore
+      result = $bridge[command](...parameters);
+      return result;
+    }
 
-services['unsubscribe'] = function (channels) {
-  unsubscribe(channels, this);
-};
+    enqueueCommand(command, parameters);
+    return result;
+  }
 
-services['publish'] = function (channelName, value, options = {}) {
-  publish(channelName, value, options);
-};
+  registerService(serviceName, fn) {
+    this.services[serviceName] = fn;
+  }
 
-services['publishOn'] = function (channelName, htmlElement, eventName) {
-  publishOn(channelName, htmlElement, eventName);
-};
-
-services['navigate'] = function (page, params) {
-  navigate(page, params);
-};
-
-services['updateInterceptorContext'] = function (ctx) {
-  updateInterceptorContext(ctx);
-};
-
-services['resetInterceptorContext'] = function () {
-  resetInterceptorContext();
-};
-
-services['getInterceptorContext'] = function () {
-  return getInterceptorContext();
-};
-
-services['setInterceptorContext'] = function (ctx) {
-  setInterceptorContext(ctx);
-};
-
-services['getCurrentRoute'] = function () {
-  getCurrentRoute();
-};
-
-services['updateSubroute'] = function (subroute) {
-  updateSubroute(subroute);
-};
-
-services['backStep'] = function () {
-  backStep();
-};
-
-function _plugCellsCore(element, bindToElement = true) {
-  Object.entries(services).forEach(function ([key, fn]) {
-    element[key] = bindToElement ? fn.bind(element) : fn;
-  });
-}
-
-function _plugCellsCoreToPrototype(element, bindToElement = true) {
-  Object.entries(services).forEach(function ([key, fn]) {
-    Object.defineProperty(element.prototype, key, {
-      value: bindToElement ? fn.bind(element) : fn,
-      writable: true,
-      configurable: true,
+  constructor() {
+    this.services = services;
+    const self = this;
+    this.registerService('subscribe', function (channelName, callback) {
+      return self.__callBridge('registerInConnection', channelName, this, callback);
     });
-  });
-}
+    this.registerService('unsubscribe', function (channels) {
+      return self.__callBridge('unsubscribe', channels, this);
+    });
+    this.registerService('publish', function (channelName, value, options = {}) {
+      return self.__callBridge('publish', channelName, value, options);
+    });
+    this.registerService('publishOn', function (channelName, htmlElement, eventName) {
+      return self.__callBridge('registerOutConnection', channelName, htmlElement, eventName);
+    });
+    this.registerService('navigate', function (page, params) {
+      return self.__callBridge('navigate', page, params);
+    });
+    this.registerService('updateInterceptorContext', function (ctx) {
+      return self.__callBridge('updateInterceptorContext', ctx);
+    });
+    this.registerService('resetInterceptorContext', function () {
+      return self.__callBridge('resetInterceptorContext');
+    });
+    this.registerService('getInterceptorContext', function () {
+      return self.__callBridge('getInterceptorContext');
+    });
+    this.registerService('setInterceptorContext', function (ctx) {
+      return self.__callBridge('setInterceptorContext', ctx);
+    });
+    this.registerService('getCurrentRoute', function () {
+      return self.__callBridge('getCurrentRoute');
+    });
+    this.registerService('updateSubroute', function (subroute) {
+      return self.__callBridge('updateSubroute', subroute);
+    });
+  }
 
-export function addCellsCoreToPrototype(element) {
-  _plugCellsCoreToPrototype(element, false);
+  _plugCellsCore(element, bindToElement = true) {
+    Object.entries(this.services).forEach(function ([key, fn]) {
+      element[key] = bindToElement ? fn.bind(element) : fn;
+    });
+  }
+
+  _plugCellsCoreToPrototype(element, bindToElement = true) {
+    Object.entries(this.services).forEach(function ([key, fn]) {
+      Object.defineProperty(element.prototype, key, {
+        value: bindToElement ? fn.bind(element) : fn,
+        writable: true,
+        configurable: true,
+      });
+    });
+  }
+
+  addCellsCoreToPrototype(element) {
+    _plugCellsCoreToPrototype(element, false);
+  }
 }
 
 export function plugCellsCore(element) {
-  _plugCellsCore(element, false);
+  const corePlugin = new CorePlugin();
+  corePlugin._plugCellsCore(element, false);
   return element;
 }

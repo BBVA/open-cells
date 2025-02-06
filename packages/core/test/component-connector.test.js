@@ -15,9 +15,9 @@
  */
 
 import { expect } from '@esm-bundle/chai';
-import { ComponentConnector } from '../../src/component-connector.js';
-import { Subscriptor } from '../../src/state/subscriptor.js';
-import { Channel } from '../../src/state/channel.js';
+import { ComponentConnector } from '../src/component-connector.js';
+import { Subscriptor } from '../src/state/subscriptor.js';
+import { Channel } from '../src/state/channel.js';
 import sinon from 'sinon';
 
 describe('ComponentConnector', () => {
@@ -99,15 +99,15 @@ describe('ComponentConnector', () => {
   //   });
   // });
 
-  describe('#updateSubscription', () => {
+  describe.skip('#updateSubscription', () => {
     // Add tests for the updateSubscription function
   });
 
-  describe('#_wrapCallbackWithNode', () => {
+  describe.skip('#_wrapCallbackWithNode', () => {
     // Add tests for the _wrapCallbackWithNode function
   });
 
-  describe('#wrapCallback', () => {
+  describe.skip('#wrapCallback', () => {
     // Add tests for the wrapCallback function
   });
 });

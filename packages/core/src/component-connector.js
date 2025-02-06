@@ -20,7 +20,7 @@ import { Subscriptor } from './state/index.js';
 import { Constants } from './constants.js';
 import { ElementAdapter } from './adapter/element-adapter.js';
 import { ChannelManager } from './manager/channel-manager.js';
-import { BRIDGE_CHANNEL_PREFIX } from './constants.js';
+// import { BRIDGE_CHANNEL_PREFIX } from './constants.js';
 
 /**
  * @typedef {import('rxjs').Subscription} Subscription;
@@ -55,8 +55,12 @@ const { externalEventsCodes } = Constants;
  * @class ComponentConnector
  */
 export class ComponentConnector {
-  /** Creates a new instance of ComponentConnector. */
-  constructor() {
+  /**
+   * Creates a new instance of ComponentConnector.
+   *
+   * @param {string} channelPrefix The prefix for the bridge channels
+   */
+  constructor(channelPrefix) {
     /**
      * The adapter for element.
      *
@@ -78,13 +82,13 @@ export class ComponentConnector {
      */
     this.subscriptors = new Map();
 
+    this.channelPrefix = channelPrefix;
     /**
      * The regular expression pattern to match bridge channels prefix.
      *
      * @type {RegExp}
      */
-    //this.bridgeChannelsPrefix = /__bridge_(?!ch)/;
-    this.bridgeChannelsPrefix = new RegExp(`${BRIDGE_CHANNEL_PREFIX}_(?!ch)`);
+    this.bridgeChannelPrefixRegex = new RegExp(`${this.channelPrefix}_(?!ch)`);
   }
 
   /**
@@ -98,7 +102,7 @@ export class ComponentConnector {
     let subscriptor = this.subscriptors.get(node);
 
     if (!subscriptor) {
-      subscriptor = new Subscriptor(node);
+      subscriptor = new Subscriptor(node, this.channelPrefix);
       this.subscriptors.set(node, subscriptor);
     }
 
@@ -517,7 +521,7 @@ export class ComponentConnector {
    * @returns {boolean} True if the channel is a bridge channel, false otherwise.
    */
   isBridgeChannel(name) {
-    return this.bridgeChannelsPrefix.test(name);
+    return this.bridgeChannelPrefixRegex.test(name);
   }
 
   /**

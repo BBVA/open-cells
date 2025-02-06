@@ -19,16 +19,6 @@ import { dedupeMixin } from '@open-wc/dedupe-mixin';
 
 const PageMixinImpl = base => {
   return class extends base {
-    static get BRIDGE_PAGE_PRIVATE_CHANNEL_PREFIX() {
-      return '__oc_page_';
-    }
-
-    static getPagePrivateChannel(tagName) {
-      return `${this.BRIDGE_PAGE_PRIVATE_CHANNEL_PREFIX}${tagName
-        .toLowerCase()
-        .replace('-page', '')}`;
-    }
-
     static get properties() {
       return {
         params: { type: Object },
@@ -37,8 +27,22 @@ const PageMixinImpl = base => {
 
     constructor() {
       super();
-      plugCellsCore(this);
+      this.pluginCellsCoreAPI(this);
       this.params = {};
+    }
+
+    pluginCellsCoreAPI(elem) {
+      plugCellsCore(elem);
+    }
+
+    static get BRIDGE_PAGE_PRIVATE_CHANNEL_PREFIX() {
+      return '__oc_page_';
+    }
+
+    static getPagePrivateChannel(tagName) {
+      return `${this.BRIDGE_PAGE_PRIVATE_CHANNEL_PREFIX}${tagName
+        .toLowerCase()
+        .replace('-page', '')}`;
     }
 
     connectedCallback() {

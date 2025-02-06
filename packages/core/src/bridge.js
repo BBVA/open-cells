@@ -81,6 +81,8 @@ import { BRIDGE_CHANNEL_PREFIX } from './constants';
  */
 const { dasherize } = Utils;
 
+window.cellsBridgeQueue = window.cellsBridgeQueue || [];
+
 /**
  * The bridge instance.
  *
@@ -92,7 +94,7 @@ export let $bridge = null;
  *
  * @type {{ command: string; parameters: any }[]}
  */
-let $queueCommands = [];
+let $queueCommands = window.cellsBridgeQueue;
 
 /**
  * Application´s Configuration object.
@@ -455,6 +457,12 @@ export class Bridge {
       console.warn('You should indicate the main node of your app');
     }
 
+    if (!this.channelPrefix) {
+      this.channelPrefix = BRIDGE_CHANNEL_PREFIX;
+    }
+
+    this.storagePrefix = `${this.channelPrefix}-`;
+
     this._initializeManagers();
 
     this._initializeDebug();
@@ -474,7 +482,7 @@ export class Bridge {
   /** Initialize managers and conectors */
   _initializeManagers() {
     /** @type {ComponentConnector} */
-    this.ComponentConnector = new ComponentConnector();
+    this.ComponentConnector = new ComponentConnector(this.channelPrefix);
 
     /** @type {TemplateManager} */
     this.TemplateManager = new TemplateManager(this);
@@ -697,6 +705,7 @@ export class Bridge {
         queuedCommandFunction.apply(this, parameters);
       });
       $queueCommands = [];
+      delete window.cellsBridgeQueue;
     }
   }
 

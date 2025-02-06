@@ -16,6 +16,8 @@ import { PageMixin } from '@open-cells/page-mixin';
 // @ts-ignore
 @customElement('home-page')
 export class HomePage extends PageTransitionsMixin(PageMixin(LitElement)) {
+  private _layout: PageLayout | null = null;
+
   protected createRenderRoot(): Element | ShadowRoot {
     // @ts-ignore
     return this;
@@ -29,9 +31,6 @@ export class HomePage extends PageTransitionsMixin(PageMixin(LitElement)) {
 
   @state()
   protected _likedRecipes: Set<Recipe> | null = null;
-
-  @state()
-  protected _layout: PageLayout | null = null;
 
   connectedCallback() {
     ``;
