@@ -2,6 +2,7 @@
 .vscode
 .history
 .wireit
+.env
 npm-debug.log
 coverage
 coverage-reports

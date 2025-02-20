@@ -28,7 +28,10 @@ describe('BridgeChannelManager', () => {
   let observableStub;
 
   beforeEach(() => {
-    bridge = { ComponentConnector: { getChannel: sinon.stub() } };
+    bridge = {
+      ComponentConnector: { getChannel: sinon.stub() },
+      channelPrefix: BRIDGE_CHANNEL_PREFIX,
+    };
     channelStub = sinon.createStubInstance(Channel);
     observableStub = sinon.createStubInstance(Observable);
     bridge.ComponentConnector.getChannel.returns(channelStub);

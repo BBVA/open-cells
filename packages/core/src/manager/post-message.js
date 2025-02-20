@@ -14,8 +14,6 @@
  * limitations under the License.
  */
 
-import { BRIDGE_CHANNEL_PREFIX } from '../constants';
-
 /**
  * @typedef {import('../../types').Bridge} Bridge
  *
@@ -74,6 +72,8 @@ export class PostMessageManager {
      * @type {BridgeChannelManager}
      */
     this.bridgeChannelManager = bridge.BridgeChannelManager;
+
+    this.channelPrefix = bridge.channelPrefix;
   }
 
   /**
@@ -93,7 +93,7 @@ export class PostMessageManager {
         }
       });
       // @ts-ignore
-      this._sendPostMessage({ event: `${BRIDGE_CHANNEL_PREFIX}-ready` });
+      this._sendPostMessage({ event: `${this.channelPrefix}-ready` });
       this.bridgeChannelManager
         .getBridgeChannel('send_post_message')
         // @ts-ignore

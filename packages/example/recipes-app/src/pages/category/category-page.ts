@@ -18,6 +18,8 @@ import { PageLayout } from '../../components/page-layout.js';
 @customElement('category-page')
 export class CategoryPage extends PageTransitionsMixin(LitElement) {
   pageController = new PageController(this);
+  
+  private _layout: PageLayout | null = null;
 
   protected createRenderRoot(): HTMLElement | DocumentFragment {
     return this.shadowRoot || this;
@@ -34,22 +36,13 @@ export class CategoryPage extends PageTransitionsMixin(LitElement) {
   @state()
   protected _recipesList: { [key: string]: any } | null = null;
 
-  @state()
-  protected _layout: PageLayout | null = null;
-
   @property({ type: Object })
   params: { category?: string } = {};
 
   willUpdate(props: any) {
     super.willUpdate?.(props);
-    if (props.has('params') || props.has('_categoriesList')) {
-      this._currentCategory = this._categoriesList?.find(
-        (category: { strCategory: string }) =>
-          category.strCategory?.toLowerCase() === this.params.category?.toLowerCase(),
-      );
-      if (this._currentCategory) {
-        this._getCurrentCategoryRecipes(this._currentCategory.strCategory);
-      }
+    if (props.has('params') && this._categoriesList) {
+      this.setCategory();
     }
   }
 
@@ -75,7 +68,19 @@ export class CategoryPage extends PageTransitionsMixin(LitElement) {
       this.pageController.publish('categories', categories);
     }
 
+    this.setCategory();
+
     this._layout = this.querySelector('page-layout');
+  }
+
+  async setCategory() {
+    this._currentCategory = this._categoriesList?.find(
+      (category: { strCategory: string }) =>
+        category.strCategory?.toLowerCase() === this.params.category?.toLowerCase(),
+    );
+    if (this._currentCategory) {
+      this._getCurrentCategoryRecipes(this._currentCategory.strCategory);
+    }
   }
 
   render() {

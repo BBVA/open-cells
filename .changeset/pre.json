@@ -1,0 +1,19 @@
+{
+  "mode": "pre",
+  "tag": "rc",
+  "initialVersions": {
+    "@open-cells/core": "1.0.1",
+    "@open-cells/core-plugin": "1.1.1",
+    "@open-cells/create-app": "1.0.2",
+    "@open-cells/element-controller": "1.0.1",
+    "blank-app": "0.1.1",
+    "@open-cells/recipes-app": "0.2.1",
+    "@open-cells/localize": "1.1.1",
+    "@open-cells/page-controller": "1.0.1",
+    "@open-cells/page-mixin": "1.1.1",
+    "@open-cells/page-transitions": "1.0.1"
+  },
+  "changesets": [
+    "yellow-snakes-serve"
+  ]
+}
