@@ -1085,10 +1085,8 @@ export class Bridge {
    * @param {QueryParams} params - The parameters to bind to the node.
    */
   _handleParams(node, params) {
-    const shouldBindParams = node['params'] && Object.keys(params).length > 0;
-
-    if (shouldBindParams) {
-      node['params'] = params;
+    if (node['params']) {
+      node['params'] = Object.keys(params).length > 0 ? params : {};
     }
   }
 
