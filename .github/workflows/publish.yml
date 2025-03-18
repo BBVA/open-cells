@@ -2,190 +2,100 @@ name: Publish to NPM
 on:
   release:
     types: [created]
-    workflow_dispatch:
-
+  workflow_dispatch:
 jobs:
   build:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-
       - name: Setup Node
         uses: actions/setup-node@v4
         with:
           node-version: '20'
           registry-url: 'https://registry.npmjs.org'
-
       - name: Install dependencies and build
         run: |
           npm i --package-lock-only
           npm ci 
           npm run build --if-present
-          
-      - name: Print GITHUB_REF for debugging
-        run: echo "GITHUB_REF is ${GITHUB_REF}"
-
-      - name: Determine publish command
-        id: publish_command
-        run: |
-          if [[ "${GITHUB_REF}" =~ ^refs/tags/[0-9]+\.[0-9]+\.[0-9]+-rc ]]; then
-            echo "::set-output name=command::npm publish --tag next"
-          elif [[ "${GITHUB_REF}" =~ ^refs/tags/[0-9]+\.[0-9]+\.[0-9] ]]; then
-            echo "::set-output name=command::npm publish"
-          else
-            echo "Branch or tag not supported for publishing"
-            exit 1
-          fi
-
-      - name: Check for changes in core package
-        id: core_changes
-        working-directory: ./packages/core
-        run: |
-          if git diff --quiet HEAD^ HEAD .; then
-            echo "No changes in core package"
-            echo "::set-output name=changed::false"
-          else
-            echo "Changes detected in core package"
-            echo "::set-output name=changed::true"
-          fi
-
       - name: Publish core package on NPM.js
-        if: steps.core_changes.outputs.changed == 'true' && steps.publish_command.outputs.command != ''
         working-directory: ./packages/core
-        run: ${{ steps.publish_command.outputs.command }}
+        run: |
+          if npm info @open-cells/core@$(jq -r .version < package.json) > /dev/null 2>&1; then
+            echo "Version already published"
+          else
+            npm publish || echo "Publish failed"
+          fi
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_PUBLISH_TOKEN }}
-
-      - name: Check for changes in core-plugin package
-        id: core_plugin_changes
-        working-directory: ./packages/core-plugin
-        run: |
-          if git diff --quiet HEAD^ HEAD .; then
-            echo "No changes in core-plugin package"
-            echo "::set-output name=changed::false"
-          else
-            echo "Changes detected in core-plugin package"
-            echo "::set-output name=changed::true"
-          fi
-
       - name: Publish core-plugin package on NPM.js
-        if: steps.core_plugin_changes.outputs.changed == 'true' && steps.publish_command.outputs.command != ''
         working-directory: ./packages/core-plugin
-        run: ${{ steps.publish_command.outputs.command }}
+        run: |
+          if npm info @open-cells/core-plugin@$(jq -r .version < package.json) > /dev/null 2>&1; then
+            echo "Version already published"
+          else
+            npm publish || echo "Publish failed"
+          fi
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_PUBLISH_TOKEN }}
-
-      - name: Check for changes in element-controller package
-        id: element_controller_changes
-        working-directory: ./packages/element-controller
-        run: |
-          if git diff --quiet HEAD^ HEAD .; then
-            echo "No changes in element-controller package"
-            echo "::set-output name=changed::false"
-          else
-            echo "Changes detected in element-controller package"
-            echo "::set-output name=changed::true"
-          fi
-
       - name: Publish element-controller package on NPM.js
-        if: steps.element_controller_changes.outputs.changed == 'true' && steps.publish_command.outputs.command != ''
         working-directory: ./packages/element-controller
-        run: ${{ steps.publish_command.outputs.command }}
+        run: |
+          if npm info @open-cells/element-controller@$(jq -r .version < package.json) > /dev/null 2>&1; then
+            echo "Version already published"
+          else
+            npm publish || echo "Publish failed"
+          fi
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_PUBLISH_TOKEN }}
-
-      - name: Check for changes in page-controller package
-        id: page_controller_changes
-        working-directory: ./packages/page-controller
-        run: |
-          if git diff --quiet HEAD^ HEAD .; then
-            echo "No changes in page-controller package"
-            echo "::set-output name=changed::false"
-          else
-            echo "Changes detected in page-controller package"
-            echo "::set-output name=changed::true"
-          fi
-
       - name: Publish page-controller package on NPM.js
-        if: steps.page_controller_changes.outputs.changed == 'true' && steps.publish_command.outputs.command != ''
         working-directory: ./packages/page-controller
-        run: ${{ steps.publish_command.outputs.command }}
+        run: |
+          if npm info @open-cells/page-controller@$(jq -r .version < package.json) > /dev/null 2>&1; then
+            echo "Version already published"
+          else
+            npm publish || echo "Publish failed"
+          fi
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_PUBLISH_TOKEN }}
-
-      - name: Check for changes in page-mixin package
-        id: page_mixin_changes
-        working-directory: ./packages/page-mixin
-        run: |
-          if git diff --quiet HEAD^ HEAD .; then
-            echo "No changes in page-mixin package"
-            echo "::set-output name=changed::false"
-          else
-            echo "Changes detected in page-mixin package"
-            echo "::set-output name=changed::true"
-          fi
-
       - name: Publish page-mixin package on NPM.js
-        if: steps.page_mixin_changes.outputs.changed == 'true' && steps.publish_command.outputs.command != ''
         working-directory: ./packages/page-mixin
-        run: ${{ steps.publish_command.outputs.command }}
+        run: |
+          if npm info @open-cells/page-mixin@$(jq -r .version < package.json) > /dev/null 2>&1; then
+            echo "Version already published"
+          else
+            npm publish || echo "Publish failed"
+          fi
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_PUBLISH_TOKEN }}
-
-      - name: Check for changes in page-transitions package
-        id: page_transitions_changes
-        working-directory: ./packages/page-transitions
-        run: |
-          if git diff --quiet HEAD^ HEAD .; then
-            echo "No changes in page-transitions package"
-            echo "::set-output name=changed::false"
-          else
-            echo "Changes detected in page-transitions package"
-            echo "::set-output name=changed::true"
-          fi
-
       - name: Publish page-transitions package on NPM.js
-        if: steps.page_transitions_changes.outputs.changed == 'true' && steps.publish_command.outputs.command != ''
         working-directory: ./packages/page-transitions
-        run: ${{ steps.publish_command.outputs.command }}
+        run: |
+          if npm info @open-cells/page-transitions@$(jq -r .version < package.json) > /dev/null 2>&1; then
+            echo "Version already published"
+          else
+            npm publish || echo "Publish failed"
+          fi
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_PUBLISH_TOKEN }}
-
-      - name: Check for changes in localize package
-        id: localize_changes
-        working-directory: ./packages/localize
-        run: |
-          if git diff --quiet HEAD^ HEAD .; then
-            echo "No changes in localize package"
-            echo "::set-output name=changed::false"
-          else
-            echo "Changes detected in localize package"
-            echo "::set-output name=changed::true"
-          fi
-
       - name: Publish localize package on NPM.js
-        if: steps.localize_changes.outputs.changed == 'true' && steps.publish_command.outputs.command != ''
         working-directory: ./packages/localize
-        run: ${{ steps.publish_command.outputs.command }}
+        run: |
+          if npm info @open-cells/localize@$(jq -r .version < package.json) > /dev/null 2>&1; then
+            echo "Version already published"
+          else
+            npm publish || echo "Publish failed"
+          fi
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_PUBLISH_TOKEN }}
-
-      - name: Check for changes in create-app package
-        id: create_app_changes
+      - name: Publish create-app package on NPM.js
         working-directory: ./packages/create-app
         run: |
-          if git diff --quiet HEAD^ HEAD .; then
-            echo "No changes in create-app package"
-            echo "::set-output name=changed::false"
+          if npm info @open-cells/create-app@$(jq -r .version < package.json) > /dev/null 2>&1; then
+            echo "Version already published"
           else
-            echo "Changes detected in create-app package"
-            echo "::set-output name=changed::true"
+            npm publish || echo "Publish failed"
           fi
-
-      - name: Publish create-app package on NPM.js
-        if: steps.create_app_changes.outputs.changed == 'true' && steps.publish_command.outputs.command != ''
-        working-directory: ./packages/create-app
-        run: ${{ steps.publish_command.outputs.command }}
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_PUBLISH_TOKEN }}
