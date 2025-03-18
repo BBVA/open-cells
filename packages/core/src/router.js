@@ -621,8 +621,11 @@ export class Router {
               if (this.channelManager) {
                 setTimeout(() => {
                   const interceptedNavigation = {
-                    from: interceptorResult.from.page,
-                    to: interceptorResult.to.page,
+                    from: {
+                      page: interceptorResult.from.page,
+                      params: interceptorResult.from.params,
+                    },
+                    to: { page: interceptorResult.to.page, params: interceptorResult.to.params },
                   };
                   this.channelManager?.publishInterceptedNavigation(interceptedNavigation);
                 }, 0);

@@ -112,8 +112,7 @@ export class Channel extends ReplaySubject {
     // @ts-ignore
     this._buffer = [];
     /** @type {any[]} */
-    // this.observers = [];
-    this._clearObservers();
+    this.unsubscribeAllObservers();
   }
 
   get buffer() {

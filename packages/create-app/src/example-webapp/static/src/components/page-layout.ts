@@ -1,5 +1,5 @@
 import { LitElement, html } from 'lit';
-import { customElement, state } from 'lit/decorators.js';
+import { customElement } from 'lit/decorators.js';
 import { ElementController } from '@open-cells/element-controller';
 import { styles } from './page-layout.css';
 
@@ -7,15 +7,15 @@ import { styles } from './page-layout.css';
 export class PageLayout extends LitElement {
   elementController = new ElementController(this);
 
-  static styles = styles;
+  private _scroller: HTMLElement | undefined | null = null;
 
-  @state()
-  protected _scroller: HTMLElement | undefined | null = null;
+  static styles = styles;
 
   firstUpdated(props: any) {
     super.firstUpdated(props);
 
     this._scroller = this.shadowRoot?.querySelector('.scroller');
+
     this._scroller?.addEventListener('scroll', ev => {
       this.elementController.publish('scroll', {
         scrollTop: (ev.target as HTMLElement)?.scrollTop,

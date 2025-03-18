@@ -1,6 +1,6 @@
 {
   "name": "@open-cells/core",
-  "version": "1.0.1",
+  "version": "1.1.0-rc.1",
   "description": "Open Cells Core",
   "type": "module",
   "types": "types/**/*.ts",
@@ -9,14 +9,15 @@
     "node": ">=16.0.0"
   },
   "scripts": {
-    "build": "rollup -c",
-    "lint": "echo \"lint\"",
     "prepublish": "npm run --unsafe-perm build",
-    "test": "web-test-runner",
     "typchk": "tsc -p ./tsconfig-typchk.json --noEmit",
-    "type-check": "tsc --project tsconfig-typchk.json",
     "unit-test": "npm run type-check && npm run test",
-    "postinstall": "npx playwright install"
+    "dev": "vite",
+    "build": "vite build",
+    "lint": "eslint . --fix",
+    "test": "vitest --run",
+    "test:watch": "vitest",
+    "test:coverage": "vitest --coverage"
   },
   "files": [
     "src/**/*",
@@ -27,22 +28,11 @@
     "webcomponents"
   ],
   "dependencies": {
-    "rxjs": "8.0.0-alpha.12"
+    "rxjs": "^7.8.1"
   },
   "devDependencies": {
-    "@babel/core": "^7.23.0",
-    "@babel/preset-env": "^7.22.20",
-    "@esm-bundle/chai": "^4.3.4-fix.0",
-    "@rollup/plugin-commonjs": "^25.0.7",
-    "@rollup/plugin-node-resolve": "^15.2.3",
-    "@rollup/plugin-terser": "^0.4.3",
-    "@web/test-runner": "^0.18.0",
-    "@web/test-runner-playwright": "^0.11.0",
-    "eslint": "^8.56.0",
-    "playwright": "^1.42.1",
-    "rollup": "^3.29.4",
-    "rollup-plugin-node-polyfills": "^0.2.1",
-    "sinon": "^17.0.1"
+    "@vitest/browser": "^2.1.2",
+    "@vitest/coverage-istanbul": "^2.1.2"
   },
   "directories": {
     "test": "test"

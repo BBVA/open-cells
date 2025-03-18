@@ -14,4 +14,4 @@
  * limitations under the License.
  */
 
-export { plugCellsCore } from './src/CorePlugin.js';
+export { plugCellsCore, CorePlugin } from './src/CorePlugin.js';
