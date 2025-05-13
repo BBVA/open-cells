@@ -1,5 +1,16 @@
 # @open-cells/recipes-app
 
+## 0.2.2
+
+### Patch Changes
+
+- Updated dependencies [ad6a9e5]
+- Updated dependencies
+  - @open-cells/core@1.1.0
+  - @open-cells/page-mixin@1.2.0
+  - @open-cells/element-controller@1.0.2
+  - @open-cells/page-controller@1.0.2
+
 ## 0.2.2-rc.0
 
 ### Patch Changes
