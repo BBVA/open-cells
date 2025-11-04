@@ -692,14 +692,14 @@ export class Bridge {
     cellsBridgeQueue = $queueCommands;
     if (Array.isArray(cellsBridgeQueue)) {
       cellsBridgeQueue.forEach(({ command, parameters }) => {
-        const queuedCommand = Object.getOwnPropertyDescriptor(Object.getPrototypeOf(this), command);
+        const queuedCommand = this[command];
 
         if (!queuedCommand) {
           console.log(`WARNING: Invalid cells bridge command execution: ${command} (QUEUE).`);
           return;
         }
         /** @type {Function} */
-        const queuedCommandFunction = queuedCommand.value;
+        const queuedCommandFunction = queuedCommand;
 
         console.log(`Executing queued command ${command}.`);
         queuedCommandFunction.apply(this, parameters);

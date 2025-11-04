@@ -1,5 +1,17 @@
 # @open-cells/core
 
+## 1.1.1
+
+### Patch Changes
+
+- ce96d42: fix(core): execution of commands not suitable for extending Bridge class
+
+## 1.1.1-rc.0
+
+### Patch Changes
+
+- ce96d42: fix(core): execution of commands not suitable for extending Bridge class
+
 ## 1.1.0
 
 ### Minor Changes
