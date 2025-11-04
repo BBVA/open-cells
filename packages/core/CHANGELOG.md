@@ -1,5 +1,11 @@
 # @open-cells/core
 
+## 1.2.0-rc.0
+
+### Minor Changes
+
+- ce96d42: fix(core): execution of commands not suitable for extending Bridge class
+
 ## 1.1.0
 
 ### Minor Changes
