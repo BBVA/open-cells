@@ -5,7 +5,7 @@
 ### Patch Changes
 
 - Updated dependencies [ce96d42]
-  - @open-cells/core@1.2.0-rc.0
+  - @open-cells/core@1.1.1-rc.0
   - @open-cells/element-controller@1.0.3-rc.0
   - @open-cells/page-mixin@1.2.1-rc.0
   - @open-cells/page-controller@1.0.3-rc.0
