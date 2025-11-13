@@ -1,5 +1,12 @@
 # @open-cells/core-plugin
 
+## 1.2.2-rc.0
+
+### Patch Changes
+
+- Updated dependencies [3b7b960]
+  - @open-cells/core@1.1.2-rc.0
+
 ## 1.2.1
 
 ### Patch Changes

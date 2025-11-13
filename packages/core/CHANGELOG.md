@@ -1,5 +1,11 @@
 # @open-cells/core
 
+## 1.1.2-rc.0
+
+### Patch Changes
+
+- 3b7b960: fix: channels remain closed after resetting them
+
 ## 1.1.1
 
 ### Patch Changes
