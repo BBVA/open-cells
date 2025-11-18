@@ -27,7 +27,7 @@
     "@open-wc/create": "^0.37.95",
     "chalk": "^4.1.0",
     "command-line-args": "^5.1.1",
-    "glob": "^10.3.10",
+    "glob": "^11.1.0",
     "prompts": "^2.4.1",
     "semver": "^7.3.5"
   },
