@@ -89,6 +89,22 @@ export class Channel extends ReplaySubject {
   //   }
   // }
 
+  /** 
+   * Unsubscribes all observers from the channel keeping the channel open.
+   */
+  unsubscribe() {
+    super.unsubscribe();
+    this.closed = false;
+    this.stoped = false;
+  }
+
+  /** 
+   * Unsubscribes all observers from the channel and closes it.
+   */
+  close() {
+    super.unsubscribe();
+  }
+
   /**
    * Unsubscribes all observers from the channel.
    *

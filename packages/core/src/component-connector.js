@@ -261,6 +261,7 @@ export class ComponentConnector {
       configurable: true,
       enumerable: true,
     });
+    wrappedCallback.node = node;
     return wrappedCallback;
   }
 

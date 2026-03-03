@@ -1,5 +1,27 @@
 # @open-cells/page-mixin
 
+## 1.2.2
+
+### Patch Changes
+
+- b9ced10: fix remove vulnerabilities
+- Updated dependencies [b9ced10]
+  - @open-cells/core-plugin@1.2.2
+
+## 1.2.2-rc.1
+
+### Patch Changes
+
+- b9ced10: fix remove vulnerabilities
+- Updated dependencies [b9ced10]
+  - @open-cells/core-plugin@1.2.2-rc.1
+
+## 1.2.2-rc.0
+
+### Patch Changes
+
+- @open-cells/core-plugin@1.2.2-rc.0
+
 ## 1.2.1
 
 ### Patch Changes

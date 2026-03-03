@@ -1,5 +1,24 @@
 # @open-cells/core
 
+## 1.1.2
+
+### Patch Changes
+
+- 3b7b960: fix: channels remain closed after resetting them
+- b9ced10: fix remove vulnerabilities
+
+## 1.1.2-rc.1
+
+### Patch Changes
+
+- b9ced10: fix remove vulnerabilities
+
+## 1.1.2-rc.0
+
+### Patch Changes
+
+- 3b7b960: fix: channels remain closed after resetting them
+
 ## 1.1.1
 
 ### Patch Changes

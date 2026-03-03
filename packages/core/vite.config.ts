@@ -1,9 +1,9 @@
 /// <reference types="vitest" />
 import { resolve } from 'node:path'
 import { defineConfig } from 'vite'
-// import dts from 'vite-plugin-dts'
 import camelCase from 'camelcase'
 import packageJson from './package.json'
+import { playwright } from '@vitest/browser-playwright'
 
 const packageName = packageJson.name.split('/').pop() || packageJson.name
 
@@ -25,9 +25,11 @@ export default defineConfig({
   test: {
     globals: true,
     browser: {
-      provider: 'playwright',
+      provider: playwright(),
       enabled: true,
-      name: 'chromium',
+      instances: [
+        { browser: 'chromium' }
+      ],
     },
     coverage: {
       enabled: true,

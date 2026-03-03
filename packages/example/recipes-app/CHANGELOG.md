@@ -1,5 +1,40 @@
 # @open-cells/recipes-app
 
+## 0.2.4
+
+### Patch Changes
+
+- b9ced10: fix remove vulnerabilities
+- Updated dependencies [3b7b960]
+- Updated dependencies [b9ced10]
+  - @open-cells/core@1.1.2
+  - @open-cells/element-controller@1.0.4
+  - @open-cells/page-transitions@1.0.2
+  - @open-cells/page-controller@1.0.4
+  - @open-cells/page-mixin@1.2.2
+
+## 0.2.4-rc.1
+
+### Patch Changes
+
+- b9ced10: fix remove vulnerabilities
+- Updated dependencies [b9ced10]
+  - @open-cells/element-controller@1.0.4-rc.1
+  - @open-cells/page-transitions@1.0.2-rc.0
+  - @open-cells/page-controller@1.0.4-rc.1
+  - @open-cells/page-mixin@1.2.2-rc.1
+  - @open-cells/core@1.1.2-rc.1
+
+## 0.2.4-rc.0
+
+### Patch Changes
+
+- Updated dependencies [3b7b960]
+  - @open-cells/core@1.1.2-rc.0
+  - @open-cells/element-controller@1.0.4-rc.0
+  - @open-cells/page-mixin@1.2.2-rc.0
+  - @open-cells/page-controller@1.0.4-rc.0
+
 ## 0.2.3
 
 ### Patch Changes

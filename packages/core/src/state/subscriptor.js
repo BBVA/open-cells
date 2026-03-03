@@ -248,7 +248,7 @@ export class Subscriptor {
   _firstInstanceOfObserver(node, channel) {
     return this.subscriptions.findIndex(
       subscriptionDetail =>
-        channel === subscriptionDetail.channel && node === subscriptionDetail.subscription.node,
+        channel === subscriptionDetail.channel && node === subscriptionDetail.node,
     );
   }
 }

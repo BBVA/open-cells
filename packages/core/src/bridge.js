@@ -366,7 +366,7 @@ export class Bridge {
    *
    * @type {Number}
    */
-  viewLimit = 1000;
+  viewLimit = 20;
   /**
    * The name of the initial template that gets rendered
    *

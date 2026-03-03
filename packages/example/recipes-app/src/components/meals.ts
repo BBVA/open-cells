@@ -7,7 +7,9 @@ const {
 } = getConfig();
 
 function getFetchUrl(action: string, param?: string, paramValue?: string): URL {
-  const data = new URL(`${basePath}/${userId}/${action}`);
+  const pathParts = [basePath, userId, action].filter(Boolean);
+  const pathname = pathParts.join('/');
+  const data = new URL(pathname);
   if (param && paramValue) {
     data.searchParams.set(param, paramValue);
   }
@@ -19,8 +21,21 @@ async function fetchMeal(
   param?: string,
   paramValue?: string,
 ): Promise<any> {
-  const data = await fetch(getFetchUrl(actions[action], param, paramValue));
-  return data.json();
+  try {
+    const url = getFetchUrl(actions[action], param, paramValue);
+    console.log('Fetching:', url.toString());
+    const response = await fetch(url);
+    if (!response.ok) {
+      console.error('Fetch failed:', response.status, response.statusText);
+      return null;
+    }
+    const data = await response.json();
+    console.log('Fetch successful:', action, data);
+    return data;
+  } catch (error) {
+    console.error('Fetch error:', error);
+    return null;
+  }
 }
 
 /* HOME */ export const getRandomMeal = async () => fetchMeal('random');
