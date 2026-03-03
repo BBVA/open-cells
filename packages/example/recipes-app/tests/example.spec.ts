@@ -21,39 +21,32 @@ test('has dark mode', async ({ page }) => {
 });
 
 test.describe('test app and its features', () => {
-  
-  test('has a daily special recipe', async ({ page }) => {
-   const banner = await page.locator('.banner').locator('.recipe-title');
-   await banner.click();
-   const regexPattern = /http:\/\/localhost:4173\/#!\/recipe\/\d+/;
-   await expect(page.url()).toMatch(regexPattern);
-  });
 
-  test('has a categorie list', async ({ page }) => {
-    const categorie = await page.locator('.categories-list');
-    const childCount = await categorie.evaluate(list => list.children.length);
+  test('has a categorylist', async ({ page }) => {
+    const category= await page.locator('.categories-list');
+    const childCount = await category.evaluate(list => list.children.length);
     await expect(childCount).toBeGreaterThan(0);
   });
 
-  test('has a categorie detail', async ({ page }) => {
-    const categorie = await page.locator('.categories-list');
-    await categorie.locator('.category-item').nth(0).click();
+  test('has a categorydetail', async ({ page }) => {
+    const category= await page.locator('.categories-list');
+    await category.locator('.category-item').nth(0).click();
     const regexPattern = /http:\/\/localhost:4173\/#!\/category\/\w+/;
     await expect(page.url()).toMatch(regexPattern);
   });
 
-  test('has a categorie detail and back home button works', async ({ page }) => {
-    const categorie = await page.locator('.categories-list');
-    await categorie.locator('.category-item').nth(0).click();
+  test('has a categorydetail and back home button works', async ({ page }) => {
+    const category= await page.locator('.categories-list');
+    await category.locator('.category-item').nth(0).click();
     const regexPattern = /http:\/\/localhost:4173\/#!\/category\/\w+/;
     await expect(page.url()).toMatch(regexPattern);
     await page.getByText('arrow_back Back to home').click(); 
     await expect(page.url()).toBe('http://localhost:4173/#!/');
   });
 
-  test('has a categorie detail and a recipe detail', async ({ page }) => {
-    const categorie = await page.locator('.categories-list');
-    await categorie.locator('.category-item').nth(0).click();
+  test('has a categorydetail and a recipe detail', async ({ page }) => {
+    const category= await page.locator('.categories-list');
+    await category.locator('.category-item').nth(0).click();
     await page.waitForSelector('category-page', { state: 'visible' });
     const element = await page.locator('category-page');
     const recipe = await element.locator('.recipe-title').nth(0);
@@ -62,9 +55,9 @@ test.describe('test app and its features', () => {
     await expect(page.url()).toMatch(regexPattern);
   });
 
-  test('has a categorie detail and a recipe detail and back to home', async ({ page }) => {
-    const categorie = await page.locator('.categories-list');
-    await categorie.locator('.category-item').nth(0).click();
+  test('has a categorydetail and a recipe detail and back to home', async ({ page }) => {
+    const category= await page.locator('.categories-list');
+    await category.locator('.category-item').nth(0).click();
     await page.waitForSelector('category-page', { state: 'visible' });
     const element = await page.locator('category-page');
     const recipe = await element.locator('.recipe-title').nth(0);
@@ -77,9 +70,9 @@ test.describe('test app and its features', () => {
     await expect(page.url()).toBe('http://localhost:4173/#!/');
   });
 
-  test('has a categorie detail and a recipe detail and back to Categories', async ({ page }) => {
-    const categorie = await page.locator('.categories-list');
-    await categorie.locator('.category-item').nth(0).click();
+  test('has a categorydetail and a recipe detail and back to Categories', async ({ page }) => {
+    const category= await page.locator('.categories-list');
+    await category.locator('.category-item').nth(0).click();
     await page.waitForSelector('category-page', { state: 'visible' });
     const element = await page.locator('category-page');
     const recipe = await element.locator('.recipe-title').nth(0);

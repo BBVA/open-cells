@@ -1,6 +1,6 @@
 {
   "name": "@open-cells/localize",
-  "version": "1.1.1",
+  "version": "1.1.2-rc.0",
   "description": "Provides internationalization, localization and formatting capabilities for Web Components through the intl messageformat library.",
   "keywords": [
     "intl",
@@ -36,8 +36,8 @@
     "@web/test-runner": "^0.18.0",
     "@web/test-runner-playwright": "^0.11.0",
     "lit": "^3.1.2",
-    "sinon": "^17.0.1",
-    "vite": "^5.2.7"
+    "sinon": "^21.0.1",
+    "vite": "^7.3.1"
   },
   "publishConfig": {
     "access": "public"

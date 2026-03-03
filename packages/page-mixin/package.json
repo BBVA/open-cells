@@ -1,6 +1,6 @@
 {
   "name": "@open-cells/page-mixin",
-  "version": "1.2.2-rc.0",
+  "version": "1.2.2-rc.1",
   "description": "",
   "files": [
     "/src/",
@@ -8,13 +8,13 @@
   ],
   "main": "index.js",
   "dependencies": {
-    "@open-cells/core-plugin": "^1.2.2-rc.0",
+    "@open-cells/core-plugin": "^1.2.2-rc.1",
     "@open-wc/dedupe-mixin": "^1.4.0"
   },
   "devDependencies": {
     "lit-element": "^2.0.0",
     "@open-wc/testing": "^3.0.0",
-    "sinon": "^7.2.0"
+    "sinon": "^21.0.1"
   },
   "publishConfig": {
     "access": "public"

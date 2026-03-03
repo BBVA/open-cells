@@ -1,6 +1,6 @@
 {
   "name": "@open-cells/element-controller",
-  "version": "1.0.4-rc.0",
+  "version": "1.0.4-rc.1",
   "main": "index.js",
   "types": "types/index.d.ts",
   "scripts": {
@@ -11,7 +11,7 @@
   "license": "Apache-2.0",
   "description": "",
   "dependencies": {
-    "@open-cells/core-plugin": "^1.2.2-rc.0"
+    "@open-cells/core-plugin": "^1.2.2-rc.1"
   },
   "files": [
     "/src/",
