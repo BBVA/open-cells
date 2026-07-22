@@ -1,10 +1,28 @@
 import { getConfig } from '@open-cells/core';
 
-const {
-  appConfig: {
-    recipesService: { basePath = undefined, userId = undefined, actions = undefined } = {},
-  } = {},
-} = getConfig();
+type RecipesActions = {
+  search: string;
+  random: string;
+  lookup: string;
+  categories: string;
+  list: string;
+  filter: string;
+};
+
+const defaultActions: RecipesActions = {
+  search: 'search.php',
+  random: 'random.php',
+  lookup: 'lookup.php',
+  categories: 'categories.php',
+  list: 'list.php',
+  filter: 'filter.php',
+};
+
+const recipesService = getConfig()?.appConfig?.recipesService as
+  | { basePath?: string; userId?: string; actions?: Partial<RecipesActions> }
+  | undefined;
+
+const { basePath, userId, actions = defaultActions } = recipesService ?? {};
 
 function getFetchUrl(action: string, param?: string, paramValue?: string): URL {
   const pathParts = [basePath, userId, action].filter(Boolean);
@@ -17,12 +35,16 @@ function getFetchUrl(action: string, param?: string, paramValue?: string): URL {
 }
 
 async function fetchMeal(
-  action: keyof typeof actions,
+  action: keyof RecipesActions,
   param?: string,
   paramValue?: string,
 ): Promise<any> {
   try {
-    const url = getFetchUrl(actions[action], param, paramValue);
+    const endpoint = actions[action];
+    if (!endpoint) {
+      return null;
+    }
+    const url = getFetchUrl(endpoint, param, paramValue);
     console.log('Fetching:', url.toString());
     const response = await fetch(url);
     if (!response.ok) {

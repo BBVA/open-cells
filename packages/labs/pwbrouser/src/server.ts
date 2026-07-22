@@ -31,10 +31,16 @@ const allMethods: Record<string, AnyHandler> = {
 const NAV_METHODS = new Set(["browser_navigate", "browser_navigate_back", "browser_close"]);
 
 async function initBrowser(): Promise<void> {
-  browser = await chromium.launch({
-    headless: false,
-    args: ["--disable-blink-features=AutomationControlled", "--no-sandbox"],
-  });
+  try {
+    browser = await chromium.launch({
+      headless: false,
+      args: ["--disable-blink-features=AutomationControlled", "--no-sandbox"],
+    });
+  } catch (error) {
+    console.error(`[Daemon Error] Failed to launch browser: ${error instanceof Error ? error.message : String(error)}`);
+    process.exit(1);
+  }
+  
   context = await browser.newContext({
     userAgent:
       "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/149.0.0.0 Safari/537.36",

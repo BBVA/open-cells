@@ -41,7 +41,7 @@ function isProcessRunning(pid: number): boolean {
   }
 }
 
-function serverStart(args: string[]): void {
+async function serverStart(args: string[]): Promise<void> {
   ensureDir();
 
   let port = DEFAULT_PORT;
@@ -61,7 +61,7 @@ function serverStart(args: string[]): void {
   const serverScript = join(dirname(fileURLToPath(import.meta.url)), "src", "server.js");
   const child: ChildProcess = spawn("node", [serverScript], {
     detached: true,
-    stdio: "ignore",
+    stdio: ["ignore", "pipe", "pipe"],
     env: { ...process.env, PWBROWSER_PORT: String(port) },
   });
 
@@ -69,6 +69,28 @@ function serverStart(args: string[]): void {
     console.error("Failed to start server.");
     process.exit(1);
   }
+
+  let stderrOutput = "";
+  child.stderr?.on("data", (chunk: Buffer) => {
+    stderrOutput += chunk.toString();
+  });
+
+  await new Promise<void>((resolve, reject) => {
+    const timer = setTimeout(() => {
+      child.stderr?.destroy();
+      child.stdout?.destroy();
+      resolve();
+    }, 5000);
+
+    child.on("exit", (code) => {
+      clearTimeout(timer);
+      if (code !== 0) {
+        reject(new Error(stderrOutput.trim() || `Server exited with code ${code}`));
+      } else {
+        resolve();
+      }
+    });
+  });
 
   writeFileSync(PID_FILE, String(child.pid));
   writeFileSync(PORT_FILE, String(port));
@@ -192,7 +214,7 @@ async function main(): Promise<void> {
 
     switch (subcommand) {
       case "start":
-        serverStart(rest);
+        await serverStart(rest);
         break;
       case "stop":
         serverStop();

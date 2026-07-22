@@ -17,8 +17,6 @@
 import { NavigationWithParams } from './navigation-stack';
 import { Navigation } from './navigation-stack';
 
-export { Bridge } from '../src/bridge';
-
 export type BridgeAPI = {
   logout: Function;
   subscribeToEvent: Function;
@@ -35,6 +33,8 @@ export type BridgeAPI = {
   getInterceptorContext: Function;
   setInterceptorContext: Function;
 };
+
+export type Bridge = any;
 
 export type EventSubscription = { event: string; callback: Function };
 

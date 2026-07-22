@@ -1,5 +1,11 @@
 # @open-cells/core
 
+## 1.2.0-rc.0
+
+### Minor Changes
+
+- c17c679: export BridgeEventManager
+
 ## 1.1.2
 
 ### Patch Changes

@@ -1,5 +1,16 @@
 # @open-cells/recipes-app
 
+## 0.2.5-rc.0
+
+### Patch Changes
+
+- c17c679: export BridgeEventManager
+- Updated dependencies [c17c679]
+  - @open-cells/core@1.2.0-rc.0
+  - @open-cells/element-controller@1.0.5-rc.0
+  - @open-cells/page-mixin@1.2.3-rc.0
+  - @open-cells/page-controller@1.0.5-rc.0
+
 ## 0.2.4
 
 ### Patch Changes

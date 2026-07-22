@@ -1,6 +1,6 @@
 {
   "name": "pwbrouser",
-  "version": "1.0.0",
+  "version": "1.0.1-rc.0",
   "description": "Playwright browser automation CLI tool",
   "type": "module",
   "main": "dist/src/server.js",
@@ -13,6 +13,7 @@
   "scripts": {
     "dev": "tsx src/server.ts",
     "build": "tsc",
+    "build:watch": "tsc --watch",
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
     "test:watch": "vitest",
