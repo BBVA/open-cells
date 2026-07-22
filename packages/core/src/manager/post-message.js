@@ -102,7 +102,8 @@ export class PostMessageManager {
   }
 
   /**
-   * Sends a postMessage to the parent window.
+   * Sends a postMessage to the parent window. The legacy eventName and eventDetail aliases are
+   * deprecated and will be removed in the next major release.
    *
    * @private
    * @param {PostMessageEvent} evt - The event to be sent.
@@ -110,7 +111,12 @@ export class PostMessageManager {
   _sendPostMessage(evt) {
     window.parent &&
       window.parent.postMessage(
-        { eventName: evt.event, eventDetail: evt.detail },
+        {
+          event: evt.event,
+          detail: evt.detail,
+          eventName: evt.event,
+          eventDetail: evt.detail,
+        },
         this.postMessageTargetOrigin,
       );
   }

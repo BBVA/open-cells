@@ -15,6 +15,7 @@
     "@open-cells/page-transitions": "1.0.2"
   },
   "changesets": [
-    "bold-brooms-shave"
+    "bold-brooms-shave",
+    "slick-years-relate"
   ]
 }

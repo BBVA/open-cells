@@ -25,6 +25,7 @@ describe('PostMessageManager', () => {
   beforeEach(() => {
     bridgeStub = {
       postMessageTargetOrigin: 'http://example.com',
+      channelPrefix: 'open-cells',
       ComponentConnector: { createEvent: sinon.stub() },
       BridgeChannelManager: {
         getPostMessageChannel: sinon.stub(),
@@ -32,6 +33,10 @@ describe('PostMessageManager', () => {
       },
     };
     postMessageManager = new PostMessageManager(bridgeStub);
+  });
+
+  afterEach(() => {
+    sinon.restore();
   });
 
   it('should create an instance of PostMessageManager', () => {
@@ -42,13 +47,38 @@ describe('PostMessageManager', () => {
     const addEventListenerStub = sinon.stub(window, 'addEventListener');
     postMessageManager.setupPostMessages();
     expect(addEventListenerStub.calledOnce).to.be.true;
-    addEventListenerStub.restore();
   });
 
   it('should send a post message to the parent window', () => {
     const postMessageStub = sinon.stub(window.parent, 'postMessage');
     postMessageManager._sendPostMessage({ event: 'testEvent', detail: 'testDetail' });
-    expect(postMessageStub.calledOnce).to.be.true;
-    postMessageStub.restore();
+    expect(
+      postMessageStub.calledOnceWithExactly(
+        {
+          event: 'testEvent',
+          detail: 'testDetail',
+          eventName: 'testEvent',
+          eventDetail: 'testDetail',
+        },
+        'http://example.com',
+      ),
+    ).to.be.true;
+  });
+
+  it('should send the ready event using the compatible payload', () => {
+    const addEventListenerStub = sinon.stub(window, 'addEventListener');
+    const postMessageStub = sinon.stub(window.parent, 'postMessage');
+    postMessageManager.setupPostMessages();
+    expect(
+      postMessageStub.calledOnceWithExactly(
+        {
+          event: 'open-cells-ready',
+          detail: undefined,
+          eventName: 'open-cells-ready',
+          eventDetail: undefined,
+        },
+        'http://example.com',
+      ),
+    ).to.be.true;
   });
 });

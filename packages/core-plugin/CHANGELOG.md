@@ -1,5 +1,11 @@
 # @open-cells/core-plugin
 
+## 1.2.3-rc.1
+
+### Patch Changes
+
+- 3b59f3d: Event object used in postMessage with inconsistent properties
+
 ## 1.2.3-rc.0
 
 ### Patch Changes
