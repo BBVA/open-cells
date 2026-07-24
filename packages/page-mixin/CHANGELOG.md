@@ -1,5 +1,12 @@
 # @open-cells/page-mixin
 
+## 1.2.3-rc.1
+
+### Patch Changes
+
+- Updated dependencies [8db69be]
+  - @open-cells/core-plugin@1.2.3-rc.2
+
 ## 1.2.3-rc.0
 
 ### Patch Changes

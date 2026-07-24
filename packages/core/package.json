@@ -1,12 +1,12 @@
 {
   "name": "@open-cells/core",
-  "version": "1.2.0-rc.0",
+  "version": "1.2.0-rc.1",
   "description": "Open Cells Core",
   "type": "module",
   "types": "types/index.d.ts",
   "main": "src/index.js",
   "engines": {
-    "node": ">=16.0.0"
+    "node": ">=22.0.0"
   },
   "scripts": {
     "prepublish": "npm run --unsafe-perm build",

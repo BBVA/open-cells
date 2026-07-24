@@ -1,5 +1,11 @@
 # @open-cells/core
 
+## 1.2.0-rc.1
+
+### Minor Changes
+
+- 8fad9d7: Raise minimum supported Node.js version to `>=22.0.0`. Consumers running Node 16-21 are no longer supported.
+
 ## 1.2.0-rc.0
 
 ### Minor Changes

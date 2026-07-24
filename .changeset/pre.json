@@ -16,6 +16,8 @@
   },
   "changesets": [
     "bold-brooms-shave",
+    "bump-node-22",
+    "fix-internal-rc-ranges",
     "slick-years-relate"
   ]
 }

@@ -1,5 +1,11 @@
 # @open-cells/page-controller
 
+## 1.0.5-rc.1
+
+### Patch Changes
+
+- @open-cells/element-controller@1.0.5-rc.1
+
 ## 1.0.5-rc.0
 
 ### Patch Changes
