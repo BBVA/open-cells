@@ -50,6 +50,12 @@ export type CellsConfig = {
   initialTemplate?: string;
   appConfig?: Record<string, any>;
   commonPages?: string[];
+  /**
+   * URL format. `false` (default) uses hash URLs like `#/path`.
+   * `true` uses clean URLs without hash (HTML5 History API) and requires
+   * the server to serve `index.html` for all routes.
+   */
+  useHistory?: boolean;
 };
 
 export type RouteDefinition = {

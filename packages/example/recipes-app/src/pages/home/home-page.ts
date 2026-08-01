@@ -138,7 +138,7 @@ export class HomePage extends PageTransitionsMixin(PageMixin(LitElement)) {
           <p class="heading-h3">Daily Special</p>
           <a
             class="recipe-title"
-            href="#!/recipe/${this._randomRecipe?.idMeal}"
+            href="#/recipe/${this._randomRecipe?.idMeal}"
             @click="${(ev: CustomEvent) =>
               this._randomRecipe && this._navigateToRecipe(ev, this._randomRecipe?.idMeal)}"
             >${this._randomRecipe?.strMeal}</a
@@ -148,7 +148,7 @@ export class HomePage extends PageTransitionsMixin(PageMixin(LitElement)) {
         <div class="banner-text-actions">
           <md-outlined-button
             aria-label="${this._randomRecipe?.strCategory} category"
-            href="#!/category/${this._randomRecipe?.strCategory.toLowerCase()}"
+            href="#/category/${this._randomRecipe?.strCategory.toLowerCase()}"
             @click="${(ev: CustomEvent) =>
               this._randomRecipe?.strCategory &&
               this._navigateToCategory(ev, this._randomRecipe?.strCategory.toLowerCase())}"
@@ -184,7 +184,7 @@ export class HomePage extends PageTransitionsMixin(PageMixin(LitElement)) {
             <md-list-item
               type="link"
               class="category-item"
-              href="#!/category/${item.strCategory.toLowerCase()}"
+              href="#/category/${item.strCategory.toLowerCase()}"
               @click="${(ev: CustomEvent) =>
                 this._navigateToCategory(ev, item.strCategory.toLowerCase())}"
             >

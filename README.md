@@ -100,6 +100,19 @@ startApp({
 - `routes`: the routes that the application will handle. These routes we'll get them from the file `src/router/route.js` which exposes an array of routes.
 - `mainNode`: the id of HTML element from `index.html` where every page will be rendered.
 
+It also accepts an optional `useHistory` flag to control the URL format:
+
+- `useHistory: false` (default): uses hash-based URLs like `#/category`. No server configuration needed.
+- `useHistory: true`: uses clean URLs without `#` like `/category` (HTML5 History API). Requires the server to serve `index.html` for all routes (rewrite every path to `/`).
+
+```js
+startApp({
+  routes,
+  mainNode: 'app-content',
+  useHistory: true, // clean URLs, e.g. /category/breakfast
+});
+```
+
 ## Routing
 
 The router from Open Cells works with the association of a route with a component (page). Every time the url fragment changes, the router look for the component for that route and it will render it inside the element specified in `mainNode`.

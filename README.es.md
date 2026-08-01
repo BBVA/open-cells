@@ -103,6 +103,19 @@ startApp({
 - `routes`: las rutas que maneja la aplicación. Las rutas las obtenemos del fichero `src/router/route.js` que expone un array de rutas.
 - `mainNode`: el id del elemento HTML en el `index.html` donde se va a renderizar cada página.
 
+También acepta un flag opcional `useHistory` para controlar el formato de la URL:
+
+- `useHistory: false` (por defecto): usa URLs con hash tipo `#/category`. No requiere configuración de servidor.
+- `useHistory: true`: usa URLs limpias sin `#` tipo `/category` (HTML5 History API). Requiere que el servidor sirva `index.html` para todas las rutas (rewrite de cualquier path a `/`).
+
+```js
+startApp({
+  routes,
+  mainNode: 'app-content',
+  useHistory: true, // URLs limpias, p.ej. /category/breakfast
+});
+```
+
 ## Routing
 
 El enrutador de Open Cells opera mediante la asociación de una ruta con un componente (página). Cada vez que el fragmento de la URL cambia, el enrutador busca el componente asociado a esa ruta y lo renderiza dentro del elemento especificado con `mainNode`.

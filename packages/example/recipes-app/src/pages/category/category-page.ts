@@ -106,8 +106,8 @@ export class CategoryPage extends PageTransitionsMixin(LitElement) {
           <li>
             <md-outlined-button
               aria-label="Back to home"
-              href="#!/"
-              @click="${() => this._navigateToHome}"
+              href="#/"
+              @click="${this._navigateToHome}"
             >
               <md-icon filled slot="icon">arrow_back</md-icon>
               <span class="md-outlined-button-text">Back to</span> home
@@ -116,8 +116,8 @@ export class CategoryPage extends PageTransitionsMixin(LitElement) {
           <li>
             <md-outlined-button
               aria-label="favorite recipes"
-              href="#!/favorite-recipes"
-              @click="${() => this._navigateToFavoriteRecipes}"
+              href="#/favorite-recipes"
+              @click="${this._navigateToFavoriteRecipes}"
             >
               <md-icon filled slot="icon">favorite</md-icon>
               ${this._likedRecipes.size}
@@ -153,7 +153,7 @@ export class CategoryPage extends PageTransitionsMixin(LitElement) {
 
                     <a
                       class="recipe-title"
-                      href="#!/recipe/${recipe.idMeal}"
+                      href="#/recipe/${recipe.idMeal}"
                       @click="${(ev: CustomEvent) => this._navigateToRecipe(ev, recipe.idMeal)}"
                     >
                       ${recipe.strMeal}

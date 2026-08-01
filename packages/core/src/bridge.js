@@ -447,6 +447,15 @@ export class Bridge {
   /** @type {string[]} */
   commonPages;
 
+  /**
+   * Indicates whether to use browser history (clean URLs without hash).
+   * When true, the router uses the HTML5 History API and the server must
+   * serve `index.html` for all routes. Defaults to false (hash URLs `#/`).
+   *
+   * @type {boolean | undefined}
+   */
+  useHistory;
+
   /** @param {CellsConfig} config */
   constructor(config) {
     if (config && typeof config == 'object') {
@@ -568,6 +577,10 @@ export class Bridge {
     }
 
     this.Router.handler = () => this.routeHandler();
+
+    if (this.useHistory !== undefined) {
+      this.Router.useHistory = this.useHistory;
+    }
 
     if (Array.isArray(this.routes)) {
       this.routes = this._parseRoutes(this.routes);

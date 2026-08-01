@@ -64,7 +64,7 @@ export class AppIndex extends LitElement {
         <div class="header-content">
           <div class="header-logo">
             <md-icon>skillet</md-icon>
-            <h1><a href="#!/">Cells Recipes</a></h1>
+            <h1><a href="#/">Cells Recipes</a></h1>
           </div>
           <md-outlined-icon-button
             class="dark-mode"

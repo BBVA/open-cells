@@ -15,101 +15,188 @@
  */
 
 import { NavigationWithParams, Navigation, NavigationStack, RoutePage, QueryParams } from './navigation-stack';
-import { Route } from './route';
 import { ParsedRoute } from './bridge';
-import { Subscription } from "rxjs";
 
+/**
+ * Route configuration object.
+ */
+export interface RouteConfig {
+  path: string;
+  action: Function;
+  notFound: boolean;
+  component?: string;
+}
+
+/**
+ * Current route information.
+ */
+export interface CurrentRoute {
+  name: string;
+  params: QueryParams;
+  query: QueryParams;
+  subroute?: string;
+  handler?: () => void;
+}
 
 export interface Router {
-    
-    SUPPORTS_HISTORY_API : boolean;
-    
-    PARAM : RegExp;
-    
-    LTRIM_SLASH : RegExp;
+  /**
+   * Indicates whether the browser supports the History API.
+   */
+  SUPPORTS_HISTORY_API: boolean;
 
-    EMPTY : RegExp;
+  /**
+   * Indicates whether a navigation is currently in progress.
+   */
+  isNavigationInProgress: boolean;
 
-    HASH_PREFIX : RegExp;
+  /**
+   * Represents the status of a cancelled navigation.
+   */
+  cancelledNavigation: string;
 
-    PATH_PREFIX : RegExp;
+  /**
+   * Indicates whether the hash is dirty or not.
+   */
+  hashIsDirty: boolean;
 
-    isNavigationInProgress : boolean;
+  /**
+   * Represents the navigation stack.
+   */
+  navigationStack: NavigationStack;
 
-    cancelledNavigation : string;
+  /**
+   * The context object for interceptors.
+   */
+  interceptorContext: Object;
 
-    hashIsDirty : boolean;
+  /**
+   * Indicates whether to use browser history (pushState URLs without hash)
+   * or hash history (#/). Defaults to false (hash history).
+   */
+  useHistory: boolean;
 
-    navigationStack : NavigationStack;
+  /**
+   * The routes configuration.
+   */
+  routes: { [key: string]: RouteConfig };
 
-    interceptorContext : Object;
+  /**
+   * The current route.
+   */
+  currentRoute: CurrentRoute;
 
-    useHistory : boolean;
+  /**
+   * Handler function called when route changes.
+   */
+  handler(route: CurrentRoute): void;
 
-    matchRoute(fullPath : string) : Route | undefined;
+  /**
+   * Adds a route to the router.
+   */
+  addRoute(name: string, patterns: string | string[], action: Function, notFound: boolean, component: string | undefined): RouteConfig;
 
-    getRouteWithPattern(patternToMatch : string) : Route | null;
+  /**
+   * Adds routes to the router.
+   */
+  addRoutes(routes: ParsedRoute | undefined): void;
 
-    interceptor(navigation : NavigationWithParams, context : Object) : { intercept : boolean };
+  /**
+   * Adds skip navigations to the router.
+   */
+  addSkipNavigations(skipNavs: Navigation[]): void;
 
-    intercept(routeFrom : RoutePage, routeTo : Route) : { from : RoutePage, to : RoutePage, redirect : string, intercept : boolean };
+  /**
+   * Starts the router.
+   */
+  start(): void;
 
-    updateInterceptorContext(ctx : Object) : void;
+  /**
+   * Stops the router.
+   */
+  stop(): void;
 
-    setInterceptorContext(ctx : Object) : void;
+  /**
+   * Destroys the router.
+   */
+  destroy(): void;
 
-    getInterceptorContext() : Object;
+  /**
+   * Interceptor function.
+   */
+  interceptor(navigation: NavigationWithParams, context: Object): { intercept: boolean };
 
-    start() : Subscription;
+  /**
+   * Intercepts the navigation.
+   */
+  intercept(routeFrom: RoutePage, routeTo: RoutePage): { from: RoutePage, to: RoutePage, redirect?: string, intercept: boolean };
 
-    stop() : void;
+  /**
+   * Updates the interceptor context.
+   */
+  updateInterceptorContext(ctx: Object): void;
 
-    destroy() : void;
-    
-    routes : { [key: string]: Route };
+  /**
+   * Sets the interceptor context.
+   */
+  setInterceptorContext(ctx: Object): void;
 
-    currentRoute : Route;
+  /**
+   * Returns the interceptor context.
+   */
+  getInterceptorContext(): Object;
 
-    handler(route : Route) : void;
+  /**
+   * Returns the resolved path for a given route name and parameters.
+   */
+  getPath(routeName: string, params: QueryParams | undefined): string | undefined;
 
-    addRoute(name : string, patterns : string | string[], action : Function, notFound : boolean, component : string | undefined) : Route;
+  /**
+   * Creates a new navigation object.
+   */
+  newNavigation(name: string): Navigation;
 
-    addRoutes(routes : ParsedRoute | undefined) : void;
+  /**
+   * Reverses the navigation object.
+   */
+  reverseNavigation(nav: Navigation): Navigation;
 
-    addSkipNavigations(skipNavs : Navigation[]) : void;
+  /**
+   * Navigates to a specified route.
+   */
+  go(name: string, params: QueryParams | undefined, replace: boolean, skipHistory: boolean): void;
 
-    matchRoute(fullPath : string) : Route | undefined;
+  /**
+   * Navigates back to the previous route.
+   */
+  back(): NavigationWithParams;
 
-    getRouteWithPattern(patternToMatch : string) : Route | null;
+  /**
+   * Updates the path in the browser.
+   */
+  updatePathInBrowser(path: string, replace: boolean): void;
 
-    newNavigation(name : string) : Navigation;
+  /**
+   * Updates the subroute in the browser.
+   */
+  updateSubrouteInBrowser(subroute: string): void;
 
-    reverseNavigation(nav : Navigation) : Navigation;
+  /**
+   * Replaces the current route with a new route.
+   */
+  goReplacing(name: string, params: QueryParams | undefined): void;
 
-    getPath(routeName : string, params : QueryParams | undefined) : string | undefined;
+  /**
+   * Get last route from stack.
+   */
+  getLastRoute(): RoutePage | undefined;
 
-    go(name : string, params : QueryParams | undefined, replace : boolean, skipHistory : boolean) : void;
+  /**
+   * Initialize router stack.
+   */
+  init(): void;
 
-    back() : NavigationWithParams;
-
-    updatePathInBrowser(path : string, replace : boolean) : void;
-
-    updateSubrouteInBrowser(subroute : string) : void;
-
-    goReplacing(name : string, params : QueryParams | undefined) : void;
-
-    historyReplaceState(path : string) : void;
-
-    historyPushState(path : string) : void;
-
-    locationReplace(path : string) : void;
-
-    locationHash(path : string) : void;
-
-    getLastRoute() : RoutePage | undefined;
-
-    init() : void;
-
-    clearStackUntil(targetPage : string) : void;
-    }
-    
+  /**
+   * Clear the router stack until given page is found.
+   */
+  clearStackUntil(targetPage: string): void;
+}

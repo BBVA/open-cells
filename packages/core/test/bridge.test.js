@@ -152,7 +152,7 @@ describe('Bridge', () => {
       await p;
       const currentRoute = bridge.getCurrentRoute();
       expect(currentRoute.name).to.equal('category');
-      expect(location.hash).to.equal('#!/categories/service');
+      expect(location.hash).to.equal('#/categories/service');
       const params = document.body.querySelector('category-page').params;
       expect(params).to.deep.equal({ name: 'service' });
     });

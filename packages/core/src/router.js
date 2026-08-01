@@ -14,9 +14,7 @@
  * limitations under the License.
  */
 
-import { Route } from './route';
-import { Subscription, fromEvent, merge } from 'rxjs';
-import { distinctUntilChanged, map, startWith, filter } from 'rxjs/operators';
+import { createRouter, createHashHistory, createBrowserHistory } from '@remix-run/router';
 import { eventManager } from './manager/events';
 import { NavigationStack } from './navigation-stack';
 import { Constants } from './constants';
@@ -35,17 +33,8 @@ import { Constants } from './constants';
  * @typedef {import('../types').NavigationWithParams} NavigationWithParams
  *
  * @typedef {import('../types').WCEvent} WCEvent
- *
- * @typedef {import('rxjs').TeardownLogic} TeardownLogic;
- *
- * @typedef {import('rxjs').Observable<String>} ObservableString;
  */
 
-/**
- * @constant
- * @type {Subscription}
- */
-const EMPTY = Subscription.EMPTY;
 /**
  * @constant
  * @type {Constants}
@@ -54,77 +43,10 @@ const { externalEventsCodes } = Constants;
 
 /** @type {Router | null} */
 let instance = null;
-/** @type {boolean} */
-let _useHistory = false;
-/** @type {{} | { [key: string]: Route }} */
-let _routes = {};
-/** @type {Subscription | null} */
-let _disposables;
-/** @type {Route} */
-let _currentRoute;
-/** @type {Route | null} */
-let _404Route;
 
 /**
- * @class SerialSubscription Mimics behavior of SerialDisposable in RxJS v4, allows to add only
- *   single subscription. If new subscription's added, existing subscription will be unsubscribed.
- *
- *   By design of RxJS v5 it is no longer recommended to manage subscription imperatively vis various
- *   kind of subscription, reason it only have single kind of composite subscription. This
- *   implementation is for interop between existing codebase.
- * @extends {Subscription}
- */
-class SerialSubscription extends Subscription {
-  constructor() {
-    super();
-    this._currentSubscription = EMPTY;
-  }
-
-  /**
-   * Adds a tear down to be called during the unsubscribe() of this Subscription.
-   *
-   * If there's existing subscription, it'll be unsubscribed and removed.
-   *
-   * @param {() => void} teardown The additional logic to execute on teardown.
-   */
-  add(teardown) {
-    if (this.closed) return;
-    // let newSubscription;
-    // if (typeof teardown === 'function') {
-    //   newSubscription = new Subscription(teardown);
-    // } else {
-    //   newSubscription = new Subscription();
-    // }
-    const newSubscription = new Subscription(teardown);
-
-    if (this._currentSubscription) {
-      this.remove(this._currentSubscription);
-      this._currentSubscription.unsubscribe();
-      this._currentSubscription = EMPTY;
-    }
-
-    this._currentSubscription = newSubscription;
-    super.add(teardown);
-  }
-
-  // add(teardown) {
-  //   if (this.closed) return;
-  //   if (typeof teardown === 'function') teardown = new Subscription(teardown);
-
-  //   if (this._currentSubscription) {
-  //     this.remove(this._currentSubscription);
-  //     this._currentSubscription.unsubscribe();
-  //     this._currentSubscription = null;
-  //   }
-
-  //   super.add((this._currentSubscription = teardown));
-  // }
-}
-
-/**
- * Represents a router that handles navigation and routing in the application. The Router class
- * provides methods for adding routes, matching routes, and handling navigation events. It also
- * supports history API and hash-based navigation.
+ * Represents a router that handles navigation and routing in the application using @remix-run/router.
+ * The Router class provides methods for adding routes, matching routes, and handling navigation events.
  *
  * @class Router
  */
@@ -135,69 +57,50 @@ export class Router {
    * @type {boolean}
    */
   static SUPPORTS_HISTORY_API = window.history && 'pushState' in window.history;
-  /**
-   * Regular expression pattern used to match and capture route parameters.
-   *
-   * @type {RegExp}
-   */
-  static PARAM = /(?::([^/]+))/g;
-  /**
-   * Regular expression pattern used to match and remove leading slashes from a string.
-   *
-   * @type {RegExp}
-   */
-  static LTRIM_SLASH = /^\/(\b)/;
 
-  /**
-   * Regular expression pattern representing an empty string.
-   *
-   * @type {RegExp}
-   */
-  static EMPTY = /^$/;
-
-  /**
-   * Regular expression pattern used to match and remove hash prefixes.
-   *
-   * @type {RegExp}
-   */
-  static HASH_PREFIX = /^#!?\/*/;
-  /**
-   * Regular expression pattern used to match and remove leading slashes from a path.
-   *
-   * @type {RegExp}
-   */
-  static PATH_PREFIX = /^\/*/;
   /**
    * Indicates whether a navigation is currently in progress.
    *
    * @type {boolean}
    */
   static isNavigationInProgress = false;
+
   /**
    * Represents the status of a cancelled navigation.
    *
    * @type {string}
    */
   static cancelledNavigation;
+
   /**
    * Indicates whether the hash is dirty or not.
    *
    * @type {boolean}
    */
   static hashIsDirty = false;
+
   /**
    * Represents the navigation stack.
    *
    * @type {NavigationStack}
    */
   navigationStack;
+
   /**
-   * The channel manager handles the communication channels in the router. It is responsible for
-   * managing the creation, deletion, and routing of channels.
+   * The channel manager handles the communication channels in the router.
    *
    * @type {BridgeChannelManager | null}
    */
   _channelManager = null;
+
+  /**
+   * Indicates whether to use browser history (pushState) or hash history.
+   * When true, uses createBrowserHistory; when false, uses createHashHistory.
+   *
+   * @type {boolean}
+   */
+  _useHistory = false;
+
   /**
    * The context object for interceptors.
    *
@@ -206,7 +109,40 @@ export class Router {
   interceptorContext = {};
 
   /**
-   * Represents the constructor of the Router class.
+   * The remix-run router instance.
+   *
+   * @type {import('@remix-run/router').Router | null}
+   */
+  _remixRouter = null;
+
+  /**
+   * The browser or hash history instance.
+   *
+   * @type {import('@remix-run/router').HashHistory | import('@remix-run/router').BrowserHistory | null}
+   */
+  _history = null;
+
+  /**
+   * Map of route names to route configurations.
+   *
+   * @type {Map<string, {path: string, action: Function, notFound: boolean, component: string|undefined}>}
+   */
+  _routeConfig = new Map();
+
+  /**
+   * Current route information.
+   *
+   * @type {{name: string, params: QueryParams, query: QueryParams, subroute: string|undefined}}
+   */
+  _currentRoute = {
+    name: '',
+    params: {},
+    query: {},
+    subroute: undefined
+  };
+
+  /**
+   * Creates a new Router instance.
    *
    * @class
    */
@@ -241,9 +177,8 @@ export class Router {
    * @param {boolean} value - The value to set for useHistory.
    */
   set useHistory(value) {
-    /* istanbul ignore else */
     if (Router.SUPPORTS_HISTORY_API) {
-      _useHistory = value;
+      this._useHistory = value;
     }
   }
 
@@ -253,7 +188,7 @@ export class Router {
    * @returns {boolean} The useHistory object.
    */
   get useHistory() {
-    return _useHistory;
+    return this._useHistory;
   }
 
   /**
@@ -273,45 +208,70 @@ export class Router {
   get channelManager() {
     return this._channelManager;
   }
+
   /**
    * Setter for the routes property.
    *
-   * @param {{ [key: string]: Route }} routes - The routes to be set.
+   * @param {Object} routes - The routes to be set.
    */
   set routes(routes) {
-    _routes = routes;
+    // Convert routes object to route config map
+    this._routeConfig.clear();
+    if (routes) {
+      Object.entries(routes).forEach(([name, config]) => {
+        this._routeConfig.set(name, {
+          path: config.path,
+          action: config.action,
+          notFound: Boolean(config.notFound),
+          component: config.component
+        });
+      });
+    }
   }
 
   /**
    * Get the routes.
    *
-   * @returns {{ [key: string]: Route }} The routes.
+   * @returns {Object} The routes.
    */
   get routes() {
-    return _routes;
+    const routesObj = {};
+    this._routeConfig.forEach((config, name) => {
+      routesObj[name] = {
+        path: config.path,
+        action: config.action,
+        notFound: config.notFound,
+        component: config.component
+      };
+    });
+    return routesObj;
   }
 
   /**
    * Gets the current route.
    *
-   * @returns {Route} The current route.
+   * @returns {Object} The current route.
    */
   get currentRoute() {
-    return _currentRoute;
+    return this._currentRoute;
   }
 
   /**
    * Sets the current route.
    *
-   * @param {Route} route - The current route.
+   * @param {Object} route - The current route.
    */
   set currentRoute(route) {
-    _currentRoute = route;
+    this._currentRoute = route;
   }
 
-  /** @param {Route} route */
-  // eslint-disable-next-line no-unused-vars
+  /**
+   * Handler function called when route changes.
+   *
+   * @param {Object} route - The current route.
+   */
   handler(route) {
+    console.log('🎯 Router.handler() called with:', route);
     // Overwrite to make something after all matched routes
   }
 
@@ -321,13 +281,14 @@ export class Router {
    * @param {string} name - The name of the route.
    * @param {string | string[]} patterns - The patterns associated with the route.
    * @param {Function} action - The action to be executed when the route is matched.
-   * @param {boolean} notFound - Indicates whether the route is the 404 page. Default is `false`.
+   * @param {boolean} notFound - Indicates whether the route is the 404 page.
    * @param {string | undefined} component - The name of component.
-   * @returns {Route} - The newly added route.
+   * @returns {Object} - The newly added route.
    */
-  addRoute(name, patterns, action, notFound, component) {
-    this.routes[name] = new Route(name, patterns, action, notFound, component);
-    return this.routes[name];
+  addRoute(name, patterns, action, notFound = false, component = undefined) {
+    const path = Array.isArray(patterns) ? patterns[0] : patterns;
+    this._routeConfig.set(name, { path, action, notFound, component });
+    return { name, path, action, notFound, component };
   }
 
   /**
@@ -339,12 +300,9 @@ export class Router {
     if (!routes) {
       throw new Error('Routes must be defined');
     }
-    for (let routeName in routes) {
-      if (routes.hasOwnProperty(routeName)) {
-        const { path, action, notFound, component } = routes[routeName];
-        this.addRoute(routeName, path, action, notFound, component);
-      }
-    }
+    Object.entries(routes).forEach(([name, config]) => {
+      this.addRoute(name, config.path, config.action, config.notFound, config.component);
+    });
   }
 
   /**
@@ -359,139 +317,265 @@ export class Router {
   }
 
   /**
-   * Returns the hash path by replacing the hash prefix and empty values.
+   * Returns the hash path.
    *
    * @returns {string} The hash path.
    */
   _getHashPath() {
-    return location.hash.replace(Router.HASH_PREFIX, '/').replace(Router.EMPTY, '/');
+    if (this._history) {
+      return this._history.location.pathname + this._history.location.search;
+    }
+    if (this.useHistory) {
+      return location.pathname + location.search;
+    }
+    return location.hash.replace(/^#!?\/*/, '/').replace(/^$/, '/');
   }
 
   /**
-   * Observes the hash change event and returns an observable that emits the hash path.
+   * Converts route config to remix-run router routes format.
    *
-   * @returns {ObservableString} An observable that emits the hash path.
+   * @returns {Array} Routes in remix-run router format.
    */
-  _observeHashChange() {
-    return fromEvent(window, 'hashchange').pipe(
-      map(this._getHashPath),
-      startWith(this._getHashPath()),
-    );
+  _buildRemixRoutes() {
+    const routes = [];
+    this._routeConfig.forEach((config, name) => {
+      routes.push({
+        path: config.path,
+        id: name,
+        loader: async ({ params, request }) => {
+          const url = new URL(request.url);
+          const query = {};
+          url.searchParams.forEach((value, key) => {
+            query[key] = value;
+          });
+          return {
+            name,
+            params: params || {},
+            query,
+            subroute: undefined
+          };
+        }
+      });
+    });
+    return routes;
   }
 
   /**
-   * Returns the URL path by replacing the Router.PATH_PREFIX with a forward slash.
+   * Finds a route name by path.
    *
-   * @returns {string} The URL path.
+   * @param {string} path - The path to match.
+   * @returns {string | null} The route name or null if not found.
    */
-  _getURLPath() {
-    return location.pathname.replace(Router.PATH_PREFIX, '/');
-  }
-
-  /**
-   * Observes changes in the browser's state (popstate and pushstate events) and returns an
-   * Observable that emits the URL path whenever a state change occurs.
-   *
-   * @returns {ObservableString} An Observable that emits the URL path on state changes.
-   */
-  _observeStateChange() {
-    return merge(fromEvent(window, 'popstate'), fromEvent(window, 'pushstate')).pipe(
-      map(this._getURLPath),
-      startWith(this._getURLPath()),
-    );
-  }
-
-  /**
-   * Matches the given full path against the defined routes and returns the matching route.
-   *
-   * @param {string} fullPath - The full path to match against the routes.
-   * @returns {Route | undefined} - The matching route object, or undefined if no match is found.
-   */
-  matchRoute(fullPath) {
-    const [path, query] = fullPath.split('?');
-    const queryObject = this._parseQuery(query);
-    for (let routeName in this.routes) {
-      if (this.routes.hasOwnProperty(routeName)) {
-        const route = this.routes[routeName];
-        if ((!route.is404() || route.isAccessible) && route.matchPath(path)) {
-          if (route.isWildcarded) {
-            route.parsePath(fullPath);
-          } else {
-            route.parsePath(path);
-            route.parseQuery(queryObject);
-          }
-          return route;
+  _findRouteByPath(path) {
+    for (const [name, config] of this._routeConfig) {
+      if (config.path === path) {
+        return name;
+      }
+    }
+    // Try to match dynamic routes
+    for (const [name, config] of this._routeConfig) {
+      if (config.path.includes(':')) {
+        const pattern = config.path.replace(/:[^/]+/g, '[^/]+');
+        const regex = new RegExp(`^${pattern}$`);
+        if (regex.test(path)) {
+          return name;
         }
       }
     }
-    return undefined;
+    return null;
   }
 
   /**
-   * Parses a query string and returns an object containing key-value pairs.
+   * Extracts params from path based on route pattern.
    *
-   * @param {string} queryStr - The query string to be parsed.
-   * @returns {QueryParams} - An object containing the parsed key-value pairs.
+   * @param {string} pattern - The route pattern.
+   * @param {string} path - The actual path.
+   * @returns {QueryParams} The extracted params.
    */
-  _parseQuery(queryStr) {
-    /** @type {{ [key: string]: string }} */
+  _extractParams(pattern, path) {
     const params = {};
-    if (queryStr) {
-      // Split into key/value pairs
-      const queries = queryStr.split('&');
-      if (queries) {
-        // Convert the array of strings into an object
-        let key,
-          value,
-          i,
-          len = queries.length;
-        for (i = 0; i < len; i++) {
-          [key, value] = queries[i].split('=');
-          params[key] = decodeURIComponent(value);
-        }
+    const patternParts = pattern.split('/');
+    const pathParts = path.split('/');
+
+    for (let i = 0; i < patternParts.length; i++) {
+      if (patternParts[i].startsWith(':')) {
+        const paramName = patternParts[i].substring(1);
+        params[paramName] = pathParts[i];
       }
     }
     return params;
   }
 
   /**
-   * Sets up the 404 route.
+   * Starts the router and initializes the remix-run router.
    *
-   * @returns {Route | null} The 404 route object.
+   * @returns {void}
    */
-  _setup404() {
-    const route404 = Object.values(this.routes).find(route => route.is404()) || null;
-
-    // We check if 404 route have a pattern...
-    if (route404 && route404.patterns.length === 1) {
-      const routeWithSamePattern = this.getRouteWithPattern(route404.patterns[0]);
-
-      route404.redirectPage = route404.name;
-      route404.isAccessible = true;
+  start() {
+    if (this._remixRouter) {
+      return;
     }
 
-    return route404;
+    // Create browser or hash history depending on useHistory.
+    // Both sync with the browser URL and handle back/forward buttons natively.
+    this._history = this.useHistory ? createBrowserHistory() : createHashHistory();
+
+    // Build remix routes
+    const remixRoutes = this._buildRemixRoutes();
+
+    // Create remix router
+    this._remixRouter = createRouter({
+      routes: remixRoutes,
+      history: this._history,
+      future: {
+        v7_partialHydration: true
+      }
+    });
+
+    // Subscribe to router state changes
+    this._remixRouter.subscribe((state) => {
+      console.log('🔄 Router subscribe:', {
+        navigationState: state.navigation.state,
+        initialized: state.initialized,
+        pathname: state.location.pathname
+      });
+      
+      if (state.navigation.state === 'idle' && state.initialized) {
+        const location = state.location;
+        const routeName = this._findRouteByPath(location.pathname);
+        
+        console.log('📍 Route found:', routeName, 'for path:', location.pathname);
+
+        if (routeName) {
+          const config = this._routeConfig.get(routeName);
+          const params = this._extractParams(config.path, location.pathname);
+
+          // Parse query params
+          const query = {};
+          const searchParams = new URLSearchParams(location.search);
+          searchParams.forEach((value, key) => {
+            query[key] = value;
+          });
+
+          const newRoute = {
+            name: routeName,
+            params: { ...params, ...query },
+            query,
+            subroute: undefined,
+            component: config.component,
+            handler: () => {
+              console.log('🎯 Executing handler for:', routeName);
+              if (config.action) {
+                config.action();
+              }
+            }
+          };
+
+          // Check for interception
+          const currentRouteName = this.currentRoute?.name;
+          const currentRouteParams = this.currentRoute?.params;
+          const routeFrom = this.navigationStack.createRoute(currentRouteName, currentRouteParams);
+          const routeTo = this.navigationStack.createRoute(newRoute.name, newRoute.params);
+
+          const interceptorResult = this.intercept(routeFrom, routeTo);
+
+          if (interceptorResult.intercept) {
+            this.isNavigationInProgress = false;
+            if (interceptorResult.redirect) {
+              this.goReplacing(
+                interceptorResult.redirect.page,
+                interceptorResult.redirect.params
+              );
+            } else {
+              this.go(currentRouteName, currentRouteParams, false);
+              this.cancelledNavigation = currentRouteName;
+            }
+            if (this.channelManager) {
+              setTimeout(() => {
+                const interceptedNavigation = {
+                  from: {
+                    page: interceptorResult.from.page,
+                    params: interceptorResult.from.params,
+                  },
+                  to: { page: interceptorResult.to.page, params: interceptorResult.to.params },
+                };
+                this.channelManager?.publishInterceptedNavigation(interceptedNavigation);
+              }, 0);
+            }
+            return;
+          }
+
+          // Update navigation stack
+          const newRouteName = this.navigationStack.update(routeFrom, routeTo)?.page;
+          if (newRouteName && newRouteName !== routeTo.page) {
+            this.go(newRouteName, undefined, false);
+            return;
+          }
+
+          this._currentRoute = newRoute;
+          this.currentRoute.handler();
+          this.handler(this.currentRoute);
+          
+          // DO NOT reset isNavigationInProgress here
+          // It will be reset by TEMPLATE_TRANSITION_END event
+        }
+      }
+    });
+
+    // Initialize the router
+    this._remixRouter.initialize();
+    
+    // Force initial route handling
+    const initialLocation = this._history.location;
+    const initialRouteName = this._findRouteByPath(initialLocation.pathname);
+    if (initialRouteName) {
+      const config = this._routeConfig.get(initialRouteName);
+      const params = this._extractParams(config.path, initialLocation.pathname);
+      
+      const query = {};
+      const searchParams = new URLSearchParams(initialLocation.search);
+      searchParams.forEach((value, key) => {
+        query[key] = value;
+      });
+      
+      this._currentRoute = {
+        name: initialRouteName,
+        params: { ...params, ...query },
+        query,
+        subroute: undefined,
+        component: config.component,
+        handler: () => {
+          if (config.action) {
+            config.action();
+          }
+        }
+      };
+      
+      // Execute the handler for the initial route
+      this._currentRoute.handler();
+      this.handler(this._currentRoute);
+    }
   }
 
   /**
-   * Returns the route that matches the given pattern.
-   *
-   * @param {string} patternToMatch - The pattern to match against the routes.
-   * @returns {Route | null} - The matching route, or null if no match is found.
+   * Stops the router and cleans up any resources.
    */
-  getRouteWithPattern(patternToMatch) {
-    for (let routeName in this.routes) {
-      if (this.routes.hasOwnProperty(routeName)) {
-        let route = this.routes[routeName];
-
-        // we only take care about routes with same patterns that aren't the same
-        if (!route.is404() && route.patterns.includes(patternToMatch)) {
-          return route;
-        }
-      }
+  stop() {
+    if (this._remixRouter) {
+      this._remixRouter.dispose();
+      this._remixRouter = null;
+      this._history = null;
     }
+    this.isNavigationInProgress = false;
+    this.hashIsDirty = false;
+  }
 
-    return null;
+  /**
+   * Destroys the router by stopping it and clearing the routes.
+   */
+  destroy() {
+    this.stop();
+    this._routeConfig.clear();
   }
 
   /**
@@ -499,8 +583,7 @@ export class Router {
    *
    * @param {NavigationWithParams} navigation - The navigation object.
    * @param {Object} context - The context object.
-   * @returns {{ intercept: boolean }} - An object with an 'intercept' property indicating whether
-   *   the navigation should be intercepted.
+   * @returns {{ intercept: boolean }} - An object with an 'intercept' property.
    */
   interceptor(navigation, context) {
     return { intercept: false };
@@ -510,14 +593,8 @@ export class Router {
    * Intercepts the navigation from one route to another.
    *
    * @param {RoutePage} routeFrom - The route object representing the current route.
-   * @param {Route} routeTo - The route object representing the target route.
-   * @returns {{
-   *   from: RoutePage;
-   *   to: RoutePage;
-   *   [redirect: string];
-   *   intercept: boolean;
-   * }}
-   *   - The intercepted navigation object.
+   * @param {RoutePage} routeTo - The route object representing the target route.
+   * @returns {Object} - The intercepted navigation object.
    */
   intercept(routeFrom, routeTo) {
     const navigation = {
@@ -526,8 +603,8 @@ export class Router {
         params: routeFrom.params,
       },
       to: {
-        page: routeTo.name,
-        path: routeTo.patterns[0],
+        page: routeTo.name || routeTo.page,
+        path: routeTo.path || routeTo.page,
         params: routeTo.params,
       },
     };
@@ -562,123 +639,6 @@ export class Router {
   }
 
   /**
-   * Starts the router and initializes the necessary subscriptions and event listeners.
-   *
-   * @returns {Subscription} The subscription object that can be used to unsubscribe from the
-   *   router.
-   */
-  start() {
-    /* istanbul ignore else */
-    if (!_disposables) {
-      const active = new SerialSubscription();
-
-      _404Route = this._setup404();
-
-      const source = this.useHistory ? this._observeStateChange() : this._observeHashChange();
-
-      const subscription = source.pipe(
-        distinctUntilChanged(),
-        map(this.matchRoute.bind(this)),
-        filter(r => {
-          if (r && r.name === this.cancelledNavigation) {
-            this.cancelledNavigation = undefined;
-            this.isNavigationInProgress = false;
-            if (this.currentRoute.name !== this.navigationStack.top()?.page) {
-              this.navigationStack.push({
-                page: this.currentRoute.name,
-                params: this.currentRoute.params,
-              });
-            }
-            return false;
-          } else return true;
-        }),
-      );
-
-      subscription.forEach(route => {
-        if (!this.hashIsDirty) {
-          if (route) {
-            // const currentRouteName = this.currentRoute ? this.currentRoute.name : undefined;
-            // const currentRouteParams = this.currentRoute ? this.currentRoute.params : undefined;
-            const currentRouteName = this.currentRoute?.name;
-            const currentRouteParams = this.currentRoute?.params;
-            const routeFrom = this.navigationStack.createRoute(
-              currentRouteName,
-              currentRouteParams,
-            );
-            const routeTo = this.navigationStack.createRoute(route.name, route.params);
-            const interceptorResult = this.intercept(routeFrom, route);
-            if (interceptorResult.intercept) {
-              this.isNavigationInProgress = false;
-              if (interceptorResult.redirect) {
-                this.goReplacing(
-                  interceptorResult.redirect.page,
-                  interceptorResult.redirect.params,
-                );
-              } else {
-                this.go(currentRouteName, currentRouteParams, false);
-                this.cancelledNavigation = currentRouteName;
-              }
-              if (this.channelManager) {
-                setTimeout(() => {
-                  const interceptedNavigation = {
-                    from: {
-                      page: interceptorResult.from.page,
-                      params: interceptorResult.from.params,
-                    },
-                    to: { page: interceptorResult.to.page, params: interceptorResult.to.params },
-                  };
-                  this.channelManager?.publishInterceptedNavigation(interceptedNavigation);
-                }, 0);
-              }
-              return;
-            } else {
-              // NavigationStack computes the effective new current based on the skip navigation list
-              // so it can be that the newRoute is different to the route from window.location
-              const newRouteName = this.navigationStack.update(routeFrom, routeTo)?.page;
-              if (newRouteName && newRouteName !== routeTo.page) {
-                this.go(newRouteName, undefined, false);
-                return;
-              }
-            }
-            _currentRoute = route;
-            const disposable = new Subscription(() => this.currentRoute);
-            /** @type {() => void} */
-            const dispose = () => disposable.unsubscribe();
-            active.add(dispose);
-            this.currentRoute.handler();
-            this.handler(this.currentRoute);
-          } else if (_404Route?.redirectPage) {
-            this.goReplacing(_404Route.redirectPage);
-          }
-        } else {
-          this.hashIsDirty = false;
-        }
-      });
-
-      // _disposables = new Subscription(subscription, active);
-      _disposables = active;
-    }
-
-    return _disposables;
-  }
-
-  /** Stops the router and cleans up any resources. */
-  stop() {
-    if (_disposables) {
-      _disposables.unsubscribe();
-      _disposables = null;
-    }
-    this.isNavigationInProgress = false;
-    this.hashIsDirty = false;
-  }
-
-  /** Destroys the router by stopping it and clearing the routes. */
-  destroy() {
-    this.stop();
-    this.routes = {};
-  }
-
-  /**
    * Returns the resolved path for a given route name and parameters.
    *
    * @param {string} routeName - The name of the route.
@@ -686,25 +646,39 @@ export class Router {
    * @returns {string | undefined} The resolved path.
    */
   getPath(routeName, params) {
-    const route = this.routes[routeName];
+    const config = this._routeConfig.get(routeName);
 
-    if (route) {
-      let resolvedPath;
-      const routeWithParams = route.path(params);
-      const idxQueryParams = routeWithParams.indexOf('?');
-      if (idxQueryParams > -1) {
-        const path = routeWithParams.substring(0, idxQueryParams);
-        const queryParams = routeWithParams.substring(idxQueryParams);
-        resolvedPath = path.replace(/\*/g, '') + queryParams;
-      } else {
-        resolvedPath = routeWithParams.replace(/\*/g, '');
+    if (config) {
+      let path = config.path;
+      const queryParams = [];
+
+      if (params) {
+        // Replace path params
+        Object.entries(params).forEach(([key, value]) => {
+          if (path.includes(`:${key}`)) {
+            path = path.replace(`:${key}`, String(value));
+          } else {
+            queryParams.push(`${key}=${encodeURIComponent(String(value))}`);
+          }
+        });
       }
-      return resolvedPath;
+
+      // Remove any remaining path params (optional params not provided)
+      path = path.replace(/:[^/]+/g, '');
+
+      // Clean up double slashes
+      path = path.replace(/\/+/g, '/');
+
+      if (queryParams.length > 0) {
+        path += '?' + queryParams.join('&');
+      }
+
+      return path;
     } else {
       console.error(
         'Wrong route name: %s, valid route names: %s',
         routeName,
-        Object.keys(this.routes).join(', '),
+        Array.from(this._routeConfig.keys()).join(', ')
       );
       return undefined;
     }
@@ -741,13 +715,14 @@ export class Router {
    *
    * @param {string} name - The name of the route.
    * @param {QueryParams | undefined} params - The parameters for the route.
-   * @param {boolean} [replace=false] - Whether to replace the current history entry. Default is
-   *   `false`
+   * @param {boolean} [replace=false] - Whether to replace the current history entry.
    * @param {boolean} [skipHistory=false] - Whether to skip adding the navigation to the history.
-   *   Default is `false`
    */
   go(name, params = undefined, replace = false, skipHistory = false) {
+    console.log('🚀 go() called:', { name, params, replace, skipHistory });
+    
     if (this.isNavigationInProgress) {
+      console.log('⚠️ Navigation in progress, skipping');
       return;
     }
 
@@ -758,11 +733,16 @@ export class Router {
       this.navigationStack.addSkipNavigation(reverseNav);
     }
 
-    const sanitizedName = name.replace(Router.LTRIM_SLASH, '');
+    const sanitizedName = name.replace(/^\/(\b)/, '');
     const path = this.getPath(sanitizedName, params);
+    
+    console.log('📍 Generated path:', path, 'current:', this._getHashPath());
+
     if (path && path !== this._getHashPath()) {
       this.isNavigationInProgress = true;
       this.updatePathInBrowser(path, replace);
+    } else {
+      console.log('⚠️ Path is same as current or invalid');
     }
   }
 
@@ -811,30 +791,32 @@ export class Router {
    * Updates the path in the browser's address bar.
    *
    * @param {string} path - The new path to be set in the address bar.
-   * @param {boolean} replace - Indicates whether to replace the current history state or push a new
-   *   one.
+   * @param {boolean} replace - Indicates whether to replace the current history state or push a new one.
    */
   updatePathInBrowser(path, replace) {
-    if (this.useHistory) {
-      if (replace) {
-        this.historyReplaceState(path);
-      } else {
-        this.historyPushState(path);
-      }
+    console.log('🌐 updatePathInBrowser:', { path, replace });
+
+    if (this._remixRouter) {
+      // Use router.navigate to update the URL and notify subscribers.
+      // createHashHistory handles pushing to / replacing window.location.hash.
+      this._remixRouter.navigate(path, { replace }).then(() => {
+        console.log('✅ Navigation completed');
+        // DO NOT reset isNavigationInProgress here
+        // It will be reset by TEMPLATE_TRANSITION_END event
+      }).catch(err => {
+        console.error('❌ Navigation error:', err);
+        this.isNavigationInProgress = false; // Reset only on error
+      });
     } else {
-      if (replace) {
-        this.locationReplace(path);
-      } else {
-        this.locationHash(path);
-      }
+      console.log('❌ No remix router available');
+      this.isNavigationInProgress = false;
     }
   }
 
   /**
    * Updates the subroute in the browser.
    *
-   * @param {string} subroute - The subroute to be added to the current route. It must start with a
-   *   slash (/)
+   * @param {string} subroute - The subroute to be added to the current route.
    */
   updateSubrouteInBrowser(subroute) {
     const currentRoute = this.currentRoute;
@@ -862,42 +844,6 @@ export class Router {
   }
 
   /**
-   * Reemplaza el estado actual del historial del navegador con una nueva URL.
-   *
-   * @param {string} path - La nueva URL a reemplazar en el historial del navegador.
-   */
-  historyReplaceState(path) {
-    history.replaceState(null, '', path);
-  }
-
-  /**
-   * Pushes a new state to the browser history.
-   *
-   * @param {string} path - The path to push to the history.
-   */
-  historyPushState(path) {
-    history.pushState(null, '', path);
-  }
-
-  /**
-   * Replaces the current location with the specified path.
-   *
-   * @param {string} path - The path to replace the current location with.
-   */
-  locationReplace(path) {
-    location.replace('#!' + path);
-  }
-
-  /**
-   * Sets the location hash with the specified path.
-   *
-   * @param {string} path - The path to set as the location hash.
-   */
-  locationHash(path) {
-    location.hash = '#!' + path;
-  }
-
-  /**
    * Get last route from stack.
    *
    * @returns {RoutePage | undefined} Last route from stack.
@@ -906,12 +852,16 @@ export class Router {
     return this.navigationStack.top();
   }
 
-  /** Initialize router stack. */
+  /**
+   * Initialize router stack.
+   */
   init() {
     this._clearStack();
   }
 
-  /** Clear the router stack. */
+  /**
+   * Clear the router stack.
+   */
   _clearStack() {
     this.navigationStack.clear();
   }
@@ -923,5 +873,44 @@ export class Router {
    */
   clearStackUntil(targetPage) {
     this.navigationStack.clearUntil(targetPage);
+  }
+
+  /**
+   * Indicates whether a navigation is currently in progress.
+   *
+   * @type {boolean}
+   */
+  get isNavigationInProgress() {
+    return Router.isNavigationInProgress;
+  }
+
+  set isNavigationInProgress(value) {
+    Router.isNavigationInProgress = value;
+  }
+
+  /**
+   * Represents the status of a cancelled navigation.
+   *
+   * @type {string}
+   */
+  get cancelledNavigation() {
+    return Router.cancelledNavigation;
+  }
+
+  set cancelledNavigation(value) {
+    Router.cancelledNavigation = value;
+  }
+
+  /**
+   * Indicates whether the hash is dirty or not.
+   *
+   * @type {boolean}
+   */
+  get hashIsDirty() {
+    return Router.hashIsDirty;
+  }
+
+  set hashIsDirty(value) {
+    Router.hashIsDirty = value;
   }
 }

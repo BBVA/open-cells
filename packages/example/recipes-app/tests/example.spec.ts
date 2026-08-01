@@ -31,17 +31,17 @@ test.describe('test app and its features', () => {
   test('has a categorydetail', async ({ page }) => {
     const category= await page.locator('.categories-list');
     await category.locator('.category-item').nth(0).click();
-    const regexPattern = /http:\/\/localhost:4173\/#!\/category\/\w+/;
+    const regexPattern = /http:\/\/localhost:4173\/#\/category\/\w+/;
     await expect(page.url()).toMatch(regexPattern);
   });
 
   test('has a categorydetail and back home button works', async ({ page }) => {
     const category= await page.locator('.categories-list');
     await category.locator('.category-item').nth(0).click();
-    const regexPattern = /http:\/\/localhost:4173\/#!\/category\/\w+/;
+    const regexPattern = /http:\/\/localhost:4173\/#\/category\/\w+/;
     await expect(page.url()).toMatch(regexPattern);
     await page.getByText('arrow_back Back to home').click(); 
-    await expect(page.url()).toBe('http://localhost:4173/#!/');
+    await expect(page.url()).toBe('http://localhost:4173/#/');
   });
 
   test('has a categorydetail and a recipe detail', async ({ page }) => {
@@ -51,7 +51,7 @@ test.describe('test app and its features', () => {
     const element = await page.locator('category-page');
     const recipe = await element.locator('.recipe-title').nth(0);
     await recipe.click();
-    const regexPattern = /http:\/\/localhost:4173\/#!\/recipe\/\d+/;
+    const regexPattern = /http:\/\/localhost:4173\/#\/recipe\/\d+/;
     await expect(page.url()).toMatch(regexPattern);
   });
 
@@ -62,12 +62,12 @@ test.describe('test app and its features', () => {
     const element = await page.locator('category-page');
     const recipe = await element.locator('.recipe-title').nth(0);
     await recipe.click();
-    const regexPattern = /http:\/\/localhost:4173\/#!\/recipe\/\d+/;
+    const regexPattern = /http:\/\/localhost:4173\/#\/recipe\/\d+/;
     await expect(page.url()).toMatch(regexPattern);
     await page.waitForSelector('recipe-page', { state: 'visible' });
     const recipePage = await page.locator('recipe-page');
     await recipePage.getByText('arrow_back Back to home').click();
-    await expect(page.url()).toBe('http://localhost:4173/#!/');
+    await expect(page.url()).toBe('http://localhost:4173/#/');
   });
 
   test('has a categorydetail and a recipe detail and back to Categories', async ({ page }) => {
@@ -80,7 +80,7 @@ test.describe('test app and its features', () => {
     await page.waitForSelector('recipe-page', { state: 'visible' });
     const recipePage = await page.locator('recipe-page');
     await recipePage.locator('.page-header-actions md-outlined-button').click();
-    const regexPattern = /http:\/\/localhost:4173\/#!\/category\/\w+/;
+    const regexPattern = /http:\/\/localhost:4173\/#\/category\/\w+/;
     await expect(page.url()).toMatch(regexPattern);
   });
 
