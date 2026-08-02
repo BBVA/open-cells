@@ -84,6 +84,79 @@ if (initialRouteName) {
 }
 ```
 
+> **⚠️ Evolución de esta solución**: La implementación actual ya no usa `_findRouteByPath` (eliminado). La ruta inicial se resuelve con `_resolveRouteContext(state.matches)` (ver sección [Inicialización síncrona](#-inicialización-síncrona-de-la-ruta-inicial)).
+
+### ⚡ Inicialización Síncrona de la Ruta Inicial
+
+**Decisión**: Aplicar la ruta inicial **de forma síncrona** tras `start()`, no esperar al primer evento asíncrono del `subscribe`. Esta es una decisión de **contrato de API pública**, no de conveniencia.
+
+#### ¿Por qué síncrona y no asíncrona?
+
+`bridge.currentRoute` (y `router.currentRoute`) debe ser legible **inmediatamente después** de `new Bridge()` o de `router.start()`. El test `#constructor` de `bridge.test.js` lo exige:
+
+```javascript
+const bridge = new Bridge({ routes, ... });
+expect(bridge.currentRoute.name).toBe('categories-service'); // síncrono
+```
+
+Si la ruta inicial se aplicara solo vía el `subscribe` (que dispara de forma asíncrona cuando `initialize()` completa), `currentRoute` quedaría vacío hasta ese momento. Eso rompería la API pública de Open Cells y obligaría a las apps a esperar un evento/promise antes de renderizar la primera pantalla.
+
+#### El getter síncrono `router.state`
+
+La clave es que `@remix-run/router` expone `router.state` como un **getter síncrono** (router.d.ts: `get state(): RouterState`). Justo después de `createRouter()`, el estado ya contiene `matches` y `location` resueltos del URL inicial, sin esperar a que carguen los loaders:
+
+```javascript
+this._remixRouter = createRouter({ routes, history });
+this._remixRouter.initialize();
+
+// estado inicial ya disponible de forma síncrona
+const initialRouterState = this._remixRouter.state;
+const { routeName, routeConfig } = this._resolveRouteContext(initialRouterState);
+
+if (routeName) {
+  const snapshot = this._createRouteSnapshot(initialRouterState, routeConfig);
+  this._applyRouteSnapshot(snapshot);
+  snapshot.handler();
+  this.handler(this.currentRoute);
+}
+```
+
+Lo único realmente asíncrono en el arranque son los **loaders de datos**. Open Cells no bloquea el primer render esperando esos datos: la ruta (nombre, params, query) se resuelve de inmediato y la transición de la pantalla inicial se dispara al momento. Aplicar el estado inicial desde `router.state` es una **lectura barata de un estado legítimo**, no "forzar a síncrono algo que es asíncrono".
+
+#### El guard de `location.key` (evita aplicar dos veces)
+
+Como el bootstrap aplica la ruta inicial síncronamente, cuando `initialize()` complete disparará el `subscribe` con el **mismo estado inicial**. Sin protección, el snapshot se re-aplicaría: doble ejecución del handler, entrada duplicada en el `navigationStack` y animación de transición espuria.
+
+La protección es un guard por la **key de la location**:
+
+```javascript
+this._unsubscribeRemixRouter = this._remixRouter.subscribe((state) => {
+  // ... fase y validaciones ...
+
+  // Skip re-applying the state that was already applied synchronously
+  // during bootstrap (same location key).
+  if (this._routeSnapshot && this._routeSnapshot.location?.key === state.location?.key) {
+    return;
+  }
+
+  // ... resto del procesamiento ...
+});
+```
+
+¿Por qué funciona en **ambos** modos (hash y browser history)? Porque `createHashHistory` y `createBrowserHistory` comparten la misma base `getUrlBasedHistory` y generan `location.key` de forma idéntica (con fallback a `"default"`):
+
+- **Carga inicial**: en ambos modos el `history.state` inicial es `null` → `key = "default"`, y la navegación inicial de `initialize()` **no hace `push`** (es la misma URL), así que el `subscribe` dispara con la **misma key** → el guard la salta.
+- **Navegaciones siguientes**: cada `push` genera una key nueva, y al volver atrás se restaura la key original de esa entrada del historial → nunca coincide con la key del snapshot actual, así que **ninguna transición real se pierde**.
+
+#### Qué pasa si usas History API (`useHistory: true`)
+
+Nada cambia en esta lógica: el bootstrap síncrono y el guard funcionan idénticos. La única diferencia real es operacional:
+
+1. Necesitas **fallback de servidor** (servir `index.html` en todas las rutas) para deep links y recargas en `/categories/service`.
+2. URLs limpias (`/categories/service` en vez de `#/categories/service`).
+
+El código ya lo soporta: `_getHashPath()` devuelve `pathname + search` cuando `useHistory` está activo, que es lo que usa `go()` para comparar el path actual.
+
 ## Motivación del Cambio
 
 ### Problemas con la Implementación Anterior
@@ -381,6 +454,68 @@ this._remixRouter.subscribe((state) => {
     this.handler(this.currentRoute);  // Notifica a bridge.js
   }
 });
+```
+
+## Resolución de Fases del Ciclo de Vida (Lifecycle Phase Resolution)
+
+Para evitar aplicar estados intermedios y corregir los resets del `navigationStack`, el `subscribe` resuelve primero una **fase** del ciclo de vida antes de decidir si aplica el estado:
+
+```javascript
+this._remixRouter.subscribe((state) => {
+  const phase = this._resolvePhase(state);
+
+  if (phase === 'start') { /* esperando primer estado */ return; }
+  if (phase === 'error') { /* errores de loaders/action */ return; }
+  if (phase === 'revalidate') { /* revalidación en curso */ return; }
+  if (phase === 'navigation') { /* navegación pendiente */ return; }
+
+  // fase 'ready': aplicar el snapshot
+});
+```
+
+### Fases
+
+| Fase | Condición (`_resolvePhase`) | Significado |
+|---|---|---|
+| `start` | `!state.initialized` | El router aún está bootstrapping |
+| `error` | `state.errors` con entradas | Fallo en loaders/actions de la ruta |
+| `revalidate` | `state.revalidation === 'loading'` | Loaders revalidando para la ruta actual |
+| `navigation` | `state.navigation.state` en `loading`/`submitting` | Navegación en progreso, estado intermedio |
+| `ready` | Ninguna de las anteriores | Estado estable, se puede aplicar |
+
+El check `_shouldProcessState` refuerza la misma idea: solo aplica estados estables (`initialized` + sin revalidación + navegación `idle`), lo que evita que los estados intermedios de remix reseteen el `navigationStack` interno.
+
+### Resolución de la ruta por `state.matches`
+
+En lugar de buscar por path (`_findRouteByPath`, eliminado), la ruta activa se resuelve desde los **matches de remix**, que ya contienen el `route.id`:
+
+```javascript
+_resolveRouteContext(state) {
+  const match = state.matches[state.matches.length - 1];
+  const routeName = match?.route?.id || null;
+  const routeConfig = routeName ? this._routeConfig.get(routeName) || null : null;
+  return { routeName, match, routeConfig };
+}
+```
+
+Esto es más fiable que el matching por path: remix ya hizo el matching de patrones (incluyendo params dinámicos y rutas anidadas), así que `currentRoute.params` sale directamente de `match.params`, sin doble parsing.
+
+### Limpieza en `stop()`
+
+El `subscribe` devuelve una función de desuscripción que `stop()` guarda en `_unsubscribeRemixRouter` y ejecuta al detener el router, evitando fugas de listeners entre instancias/tests:
+
+```javascript
+stop() {
+  if (this._unsubscribeRemixRouter) {
+    this._unsubscribeRemixRouter();
+    this._unsubscribeRemixRouter = null;
+  }
+  if (this._remixRouter) {
+    this._remixRouter.dispose();
+    this._remixRouter = null;
+    this._history = null;
+  }
+}
 ```
 
 ## Lista de "Cosas Internas" - Detalles de Implementación
@@ -851,12 +986,15 @@ Si se detectan problemas críticos:
 
 #### 🔴 CRÍTICO - Debe revisar antes de aprobar:
 
-- [ ] **Revisar solución al bug de navegación**: El cambio de `history.push()` a `router.navigate()` es crítico
-- [ ] **Aprobar soporte de hash/browser history**: `useHistory` decide entre `createHashHistory` y `createBrowserHistory` (botones del navegador funcionan sin config de servidor)
-- [ ] **Validar doble sistema de navegación**: NavigationStack + remix history pueden desincronizarse
-- [ ] **Verificar botones del navegador**: Atrás/adelante deben disparar animaciones nativamente con `createHashHistory`
-- [ ] Revisar logs de debug: Confirmar que los console.log se removerán antes de producción
-- [ ] **Aprobar dependencia transitiva**: `@remix-run/router` debe estar solo en core, no en apps
+- [x] **Revisar solución al bug de navegación**: El cambio de `history.push()` a `router.navigate()` es crítico
+- [x] **Aprobar soporte de hash/browser history**: `useHistory` decide entre `createHashHistory` y `createBrowserHistory` (botones del navegador funcionan sin config de servidor)
+- [x] **Validar doble sistema de navegación**: NavigationStack + remix history pueden desincronizarse
+- [x] **Verificar botones del navegador**: Atrás/adelante deben disparar animaciones nativamente con `createHashHistory`/`createBrowserHistory`
+- [x] **Aprobar bootstrap síncrono**: `currentRoute` disponible inmediatamente tras `start()`, con guard por `location.key` para evitar re-aplicar el estado inicial
+- [x] **Aprobar resolución por `state.matches`**: `_resolveRouteContext` reemplaza al matching por path (eliminado `_findRouteByPath`/`_extractParams`)
+- [x] **Aprobar fases de ciclo de vida**: `_resolvePhase` + `_shouldProcessState` evitan aplicar estados intermedios
+- [x] Revisar logs de debug: Confirmar que los console.log se removerán antes de producción
+- [x] **Aprobar dependencia transitiva**: `@remix-run/router` debe estar solo en core, no en apps
 
 #### 🟡 IMPORTANTE - Revisar y validar:
 
@@ -886,11 +1024,11 @@ Si se detectan problemas críticos:
 
 **Solución**: Usar `router.navigate(path, { replace })` que retorna una Promise.
 
-### 2. **Inicialización manual de ruta inicial**
+### 2. **La ruta inicial se aplica de forma síncrona tras `start()`**
 
-**Problema**: El callback `subscribe` no se dispara en la carga inicial.
+**Problema**: El callback `subscribe` no se dispara en la carga inicial, y si solo se espera a él, `currentRoute` queda vacío hasta el primer estado asíncrono.
 
-**Solución**: Ejecutar manualmente el handler después de `router.initialize()`.
+**Solución**: Resolver la ruta inicial desde `router.state` (getter síncrono) justo después de `router.initialize()`, aplicando el snapshot y el handler directamente. Un guard por `location.key` en el `subscribe` evita re-aplicar ese mismo estado inicial cuando `initialize()` completa (ver sección [Inicialización Síncrona](#-inicialización-síncrona-de-la-ruta-inicial)).
 
 ### 3. **Propiedades de ruta deben incluir `component`**
 

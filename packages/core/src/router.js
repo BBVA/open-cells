@@ -33,6 +33,30 @@ import { Constants } from './constants';
  * @typedef {import('../types').NavigationWithParams} NavigationWithParams
  *
  * @typedef {import('../types').WCEvent} WCEvent
+ *
+ * @typedef {import('@remix-run/router').RouterState} RouterState
+ *
+ * @typedef {import('@remix-run/router').AgnosticDataRouteMatch} AgnosticDataRouteMatch
+ *
+ * @typedef {import('@remix-run/router').Action} Action
+ *
+ * @typedef {{path: string, action: Function, component: string|undefined}} RouteConfig
+ *
+ * @typedef {Object} RouteSnapshot
+ * @property {string} name - The resolved route name.
+ * @property {QueryParams} params - The matched path params.
+ * @property {QueryParams} query - The parsed URL query params.
+ * @property {string|undefined} subroute - Nested route info.
+ * @property {string|undefined} component - The component associated to the route.
+ * @property {boolean} pending - Whether the navigation is still in progress.
+ * @property {boolean} revalidating - Whether loaders are revalidating.
+ * @property {Action} historyAction - The history action of the navigation.
+ * @property {Object|null} loaderData - Data from the loaders.
+ * @property {Object|null} actionData - Data from the action.
+ * @property {Object|null} error - Error thrown by the route loaders.
+ * @property {import('@remix-run/router').Location} location - The resolved location.
+ * @property {Array<AgnosticDataRouteMatch>} matches - The route matches.
+ * @property {Function} handler - The route action handler.
  */
 
 /**
@@ -158,7 +182,7 @@ export class Router {
   /**
    * Internal route snapshot metadata used by the wrapper.
    *
-   * @type {Object | null}
+   * @type {RouteSnapshot | null}
    */
   _routeSnapshot = null;
 
@@ -384,9 +408,9 @@ export class Router {
   /**
    * Builds an internal route snapshot from the remix router state.
    *
-   * @param {Object} state - Remix router state.
-   * @param {{path: string, component: string|undefined}} config - Route config.
-   * @returns {Object} Route snapshot compatible with the existing API.
+   * @param {RouterState} state - Remix router state.
+   * @param {RouteConfig | null} config - Route config.
+   * @returns {RouteSnapshot} Route snapshot compatible with the existing API.
    */
   _createRouteSnapshot(state, config) {
     const location = state.location || {};
@@ -396,10 +420,10 @@ export class Router {
     const routeId = match?.route?.id || this.currentRoute?.name || '';
     const routeConfig = this._routeConfig.get(routeId) || config || null;
 
-    const params = {
+    const params = /** @type {QueryParams} */ ({
       ...(match?.params || {}),
       ...Object.fromEntries(new URLSearchParams(location.search || ''))
-    };
+    });
 
     const snapshot = {
       name: routeId,
@@ -428,7 +452,7 @@ export class Router {
   /**
    * Applies the route snapshot to the current wrapper internals.
    *
-   * @param {Object} snapshot - Internal route snapshot.
+   * @param {RouteSnapshot} snapshot - Internal route snapshot.
    * @returns {void}
    */
   _applyRouteSnapshot(snapshot) {
@@ -448,49 +472,80 @@ export class Router {
   }
 
   /**
-   * Finds a route name by path.
+   * Resolves the current lifecycle phase from the remix router state.
    *
-   * @param {string} path - The path to match.
-   * @returns {string | null} The route name or null if not found.
+   * @param {RouterState} state - Remix router state.
+   * @returns {'start' | 'navigation' | 'revalidate' | 'error' | 'ready'} The resolved phase.
    */
-  _findRouteByPath(path) {
-    for (const [name, config] of this._routeConfig) {
-      if (config.path === path) {
-        return name;
-      }
+  _resolvePhase(state) {
+    if (!state?.initialized) {
+      return 'start';
     }
-    // Try to match dynamic routes
-    for (const [name, config] of this._routeConfig) {
-      if (config.path.includes(':')) {
-        const pattern = config.path.replace(/:[^/]+/g, '[^/]+');
-        const regex = new RegExp(`^${pattern}$`);
-        if (regex.test(path)) {
-          return name;
-        }
-      }
+
+    const hasErrors = Boolean(state.errors && Object.keys(state.errors).length > 0);
+    if (hasErrors) {
+      return 'error';
     }
-    return null;
+
+    if (state.revalidation === 'loading') {
+      return 'revalidate';
+    }
+
+    if (state.navigation?.state === 'loading' || state.navigation?.state === 'submitting') {
+      return 'navigation';
+    }
+
+    return 'ready';
   }
 
   /**
-   * Extracts params from path based on route pattern.
+   * Determines whether the current router state should be applied to the wrapper.
    *
-   * @param {string} pattern - The route pattern.
-   * @param {string} path - The actual path.
-   * @returns {QueryParams} The extracted params.
+   * Remix reports the previous location while a navigation is still in progress,
+   * so intermediate states should be ignored until the router reaches a stable ready state.
+   *
+   * @param {RouterState} state - Remix router state.
+   * @returns {boolean} Whether the state can be applied.
    */
-  _extractParams(pattern, path) {
-    const params = {};
-    const patternParts = pattern.split('/');
-    const pathParts = path.split('/');
-
-    for (let i = 0; i < patternParts.length; i++) {
-      if (patternParts[i].startsWith(':')) {
-        const paramName = patternParts[i].substring(1);
-        params[paramName] = pathParts[i];
-      }
+  _shouldProcessState(state) {
+    if (!state?.initialized) {
+      return false;
     }
-    return params;
+
+    if (state.revalidation === 'loading') {
+      return false;
+    }
+
+    if (state.navigation?.state === 'loading' || state.navigation?.state === 'submitting') {
+      return false;
+    }
+
+    return true;
+  }
+
+  /**
+   * Determines whether the current route application is the first bootstrap.
+   *
+   * @returns {boolean} True when the wrapper is applying the initial route.
+   */
+  _isInitialBootstrap() {
+    return !this.currentRoute?.name && !this._routeSnapshot;
+  }
+
+  /**
+   * Resolves the active route context from the remix router state.
+   *
+   * @param {RouterState} state - Remix router state.
+   * @returns {{routeName: string|null, match: AgnosticDataRouteMatch | null, routeConfig: RouteConfig | null}} The resolved route context.
+   */
+  _resolveRouteContext(state) {
+    const match = Array.isArray(state?.matches) && state.matches.length > 0
+      ? state.matches[state.matches.length - 1]
+      : null;
+    const routeName = match?.route?.id || null;
+    const routeConfig = routeName ? this._routeConfig.get(routeName) || null : null;
+
+    return { routeName, match, routeConfig };
   }
 
   /**
@@ -527,13 +582,11 @@ export class Router {
       (location) => `${location.pathname}${location.search}`
     );
 
-    this._unsubscribeRemixRouter = this._remixRouter.subscribe((state) => {
-      console.log('[router][state]', {
-        phase: state.navigation?.state === 'loading' || state.navigation?.state === 'submitting'
-          ? 'navegacion'
-          : state.revalidation === 'loading'
-            ? 'revalidacion'
-            : 'inicio',
+    this._unsubscribeRemixRouter = this._remixRouter.subscribe((/** @type {RouterState} */ state) => {
+      const phase = this._resolvePhase(state);
+
+      console.log('[router][lifecycle]', {
+        phase,
         navigationState: state.navigation?.state,
         initialized: state.initialized,
         pathname: state.location?.pathname,
@@ -541,48 +594,84 @@ export class Router {
         revalidation: state.revalidation
       });
 
-      if (!state.initialized) {
-        console.log('[router][state] Aún no está inicializado; esperando primer ciclo de carga.');
+      if (phase === 'start') {
+        console.log('[router][lifecycle] Router still bootstrapping; waiting for the first state update.');
+        return;
+      }
+
+      if (phase === 'error') {
+        console.warn('[router][lifecycle] Navigation failed with router errors:', state.errors);
+        return;
+      }
+
+      if (phase === 'revalidate') {
+        console.log('[router][lifecycle] Revalidation in progress for the current route.');
+        return;
+      }
+
+      if (phase === 'navigation') {
+        console.log('[router][lifecycle] Navigation pending; waiting for the next router state update.');
+        return;
+      }
+
+      if (!this._shouldProcessState(state)) {
+        return;
+      }
+
+      // Skip re-applying the state that was already applied synchronously
+      // during bootstrap (same location key).
+      if (this._routeSnapshot && this._routeSnapshot.location?.key === state.location?.key) {
+        console.log('[router][lifecycle] State already applied for this location, skipping.');
         return;
       }
 
       const location = state.location;
-      const routeName = this._findRouteByPath(location.pathname);
+      const { routeName, routeConfig } = this._resolveRouteContext(state);
 
       if (!routeName) {
-        console.warn('[router][error] Ruta no encontrada para:', location.pathname);
+        console.warn('[router][lifecycle] No route matched the current location:', location.pathname);
         return;
       }
 
-      console.log('[router][route] Ruta resuelta:', routeName, 'para', location.pathname);
+      console.log('[router][transition] resolved route', routeName, 'for', location.pathname);
 
-      const config = this._routeConfig.get(routeName);
-      const snapshot = this._createRouteSnapshot(state, config);
+      const snapshot = this._createRouteSnapshot(state, routeConfig);
       console.log('[router][snapshot]', snapshot);
       const currentRouteName = this.currentRoute?.name;
       const currentRouteParams = this.currentRoute?.params;
       const routeFrom = this.navigationStack.createRoute(currentRouteName, currentRouteParams);
       const routeTo = this.navigationStack.createRoute(snapshot.name, snapshot.params);
+      const fromLabel = currentRouteName ? routeFrom?.page || currentRouteName : 'initial';
+      const isInitialBootstrap = this._isInitialBootstrap();
+
+      if (isInitialBootstrap) {
+        console.log('[router][bootstrap] Initial route detected:', snapshot.name);
+      } else {
+        console.log('[router][transition] from', fromLabel, 'to', routeTo?.page || snapshot.name);
+      }
 
       const interceptorResult = this.intercept(routeFrom, routeTo);
 
       if (snapshot.error) {
-        console.warn('[router][error] Error de ruta detectado:', snapshot.error);
+        console.warn('[router][lifecycle] Route snapshot reported an error:', snapshot.error);
       }
 
       if (snapshot.pending) {
-        console.log('[router][navegacion] transición pendiente para:', snapshot.name);
+        console.log('[router][lifecycle] Route transition is still pending for', snapshot.name);
       }
 
       if (snapshot.revalidating) {
-        console.log('[router][revalidacion] revalidando loaders para:', snapshot.name);
+        console.log('[router][lifecycle] Loader revalidation is still running for', snapshot.name);
       }
 
       if (interceptorResult.intercept) {
+        console.log('[router][intercept] Navigation intercepted from', routeFrom?.page || 'unknown', 'to', routeTo?.page || snapshot.name);
         this.isNavigationInProgress = false;
         if (interceptorResult.redirect) {
+          console.log('[router][intercept] Redirecting to', interceptorResult.redirect.page);
           this.goReplacing(interceptorResult.redirect.page, interceptorResult.redirect.params);
         } else {
+          console.log('[router][intercept] Restoring the previous route after interception.');
           this.go(currentRouteName, currentRouteParams, false);
           this.cancelledNavigation = currentRouteName;
         }
@@ -603,45 +692,45 @@ export class Router {
 
       const newRouteName = this.navigationStack.update(routeFrom, routeTo)?.page;
       if (newRouteName && newRouteName !== routeTo.page) {
+        console.log('[router][transition] Navigation stack redirected to', newRouteName);
         this.go(newRouteName, undefined, false);
         return;
       }
 
       this._applyRouteSnapshot(snapshot);
+      if (isInitialBootstrap) {
+        console.log('[router][bootstrap] Applying initial route snapshot for', snapshot.name);
+      } else {
+        console.log('[router][apply] Applying route snapshot for', snapshot.name);
+      }
       if (snapshot.handler) {
         snapshot.handler();
       }
+      console.log('[router][apply] Executing handler for', this.currentRoute?.name);
       this.handler(this.currentRoute);
     });
 
     console.log('[router][start] Inicializando instancia de Remix Router');
     this._remixRouter.initialize();
 
-    const initialLocation = this._history.location;
-    const initialRouteName = this._findRouteByPath(initialLocation.pathname);
+    // Apply the initial route synchronously so currentRoute is available
+    // right after start(). The subscribe callback handles subsequent
+    // navigations; the location-key guard prevents re-applying this state.
+    const initialRouterState = this._remixRouter.state;
+    const initialLocation = initialRouterState.location || this._history.location;
+    const { routeName, routeConfig } = this._resolveRouteContext(initialRouterState);
 
-    if (initialRouteName) {
-      const config = this._routeConfig.get(initialRouteName);
-      const snapshot = this._createRouteSnapshot(
-        {
-          location: initialLocation,
-          navigation: { state: 'idle' },
-          revalidation: 'idle',
-          loaderData: {},
-          actionData: null,
-          errors: null,
-          matches: [{ route: { id: initialRouteName }, params: this._extractParams(config.path, initialLocation.pathname) }],
-          historyAction: 'POP'
-        },
-        config
-      );
-
+    if (routeName) {
+      const snapshot = this._createRouteSnapshot(initialRouterState, routeConfig);
+      console.log('[router][bootstrap] Applying initial route snapshot for', snapshot.name);
       this._applyRouteSnapshot(snapshot);
-      console.log('[router][start] Ejecutando handler inicial para:', snapshot.name);
       if (snapshot.handler) {
         snapshot.handler();
       }
+      console.log('[router][apply] Executing handler for', this.currentRoute?.name);
       this.handler(this.currentRoute);
+    } else {
+      console.warn('[router][lifecycle] No route matched the initial location:', initialLocation.pathname);
     }
   }
 

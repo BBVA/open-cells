@@ -53,6 +53,28 @@ describe('Router', () => {
     });
   });
 
+  describe('#_resolvePhase', () => {
+    it('should classify router state into lifecycle phases', () => {
+      const router = new Router();
+
+      expect(router._resolvePhase({ initialized: false })).to.equal('start');
+      expect(router._resolvePhase({ initialized: true, errors: { home: new Error('boom') } })).to.equal('error');
+      expect(router._resolvePhase({ initialized: true, revalidation: 'loading' })).to.equal('revalidate');
+      expect(router._resolvePhase({ initialized: true, navigation: { state: 'submitting' } })).to.equal('navigation');
+      expect(router._resolvePhase({ initialized: true, navigation: { state: 'idle' }, revalidation: 'idle' })).to.equal('ready');
+    });
+  });
+
+  describe('#_isInitialBootstrap', () => {
+    it('should detect the initial bootstrap before any route has been applied', () => {
+      const router = new Router();
+      expect(router._isInitialBootstrap()).to.equal(true);
+
+      router._currentRoute = { name: 'home' };
+      expect(router._isInitialBootstrap()).to.equal(false);
+    });
+  });
+
   beforeEach(() => {
     route = new Route('test', '/test/:id', () => {});
   });
