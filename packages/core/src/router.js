@@ -142,6 +142,27 @@ export class Router {
   };
 
   /**
+   * Subscription to the remix router state changes.
+   *
+   * @type {Function | null}
+   */
+  _unsubscribeRemixRouter = null;
+
+  /**
+   * Internal scroll restoration state for the remix router.
+   *
+   * @type {Record<string, number>}
+   */
+  _scrollPositions = {};
+
+  /**
+   * Internal route snapshot metadata used by the wrapper.
+   *
+   * @type {Object | null}
+   */
+  _routeSnapshot = null;
+
+  /**
    * Creates a new Router instance.
    *
    * @class
@@ -361,6 +382,72 @@ export class Router {
   }
 
   /**
+   * Builds an internal route snapshot from the remix router state.
+   *
+   * @param {Object} state - Remix router state.
+   * @param {{path: string, component: string|undefined}} config - Route config.
+   * @returns {Object} Route snapshot compatible with the existing API.
+   */
+  _createRouteSnapshot(state, config) {
+    const location = state.location || {};
+    const match = Array.isArray(state.matches) && state.matches.length > 0
+      ? state.matches[state.matches.length - 1]
+      : null;
+    const routeId = match?.route?.id || this.currentRoute?.name || '';
+    const routeConfig = this._routeConfig.get(routeId) || config || null;
+
+    const params = {
+      ...(match?.params || {}),
+      ...Object.fromEntries(new URLSearchParams(location.search || ''))
+    };
+
+    const snapshot = {
+      name: routeId,
+      params,
+      query: Object.fromEntries(new URLSearchParams(location.search || '')),
+      subroute: undefined,
+      component: routeConfig?.component,
+      pending: state.navigation?.state !== 'idle',
+      revalidating: state.revalidation === 'loading',
+      historyAction: state.historyAction,
+      loaderData: state.loaderData?.[routeId] || null,
+      actionData: state.actionData?.[routeId] || null,
+      error: state.errors?.[routeId] || null,
+      location,
+      matches: state.matches || [],
+      handler: () => {
+        if (routeConfig?.action) {
+          routeConfig.action();
+        }
+      }
+    };
+
+    return snapshot;
+  }
+
+  /**
+   * Applies the route snapshot to the current wrapper internals.
+   *
+   * @param {Object} snapshot - Internal route snapshot.
+   * @returns {void}
+   */
+  _applyRouteSnapshot(snapshot) {
+    this._routeSnapshot = snapshot;
+    this._currentRoute = {
+      name: snapshot.name,
+      params: snapshot.params,
+      query: snapshot.query,
+      subroute: snapshot.subroute,
+      component: snapshot.component,
+      handler: () => {
+        if (snapshot?.handler) {
+          snapshot.handler();
+        }
+      }
+    };
+  }
+
+  /**
    * Finds a route name by path.
    *
    * @param {string} path - The path to match.
@@ -424,6 +511,8 @@ export class Router {
     const remixRoutes = this._buildRemixRoutes();
 
     // Create remix router
+    console.log('[router][start] Inicializando router con rutas:', remixRoutes.map((route) => route.id));
+
     this._remixRouter = createRouter({
       routes: remixRoutes,
       history: this._history,
@@ -432,128 +521,127 @@ export class Router {
       }
     });
 
-    // Subscribe to router state changes
-    this._remixRouter.subscribe((state) => {
-      console.log('🔄 Router subscribe:', {
-        navigationState: state.navigation.state,
+    this._remixRouter.enableScrollRestoration(
+      this._scrollPositions,
+      () => window.scrollY,
+      (location) => `${location.pathname}${location.search}`
+    );
+
+    this._unsubscribeRemixRouter = this._remixRouter.subscribe((state) => {
+      console.log('[router][state]', {
+        phase: state.navigation?.state === 'loading' || state.navigation?.state === 'submitting'
+          ? 'navegacion'
+          : state.revalidation === 'loading'
+            ? 'revalidacion'
+            : 'inicio',
+        navigationState: state.navigation?.state,
         initialized: state.initialized,
-        pathname: state.location.pathname
+        pathname: state.location?.pathname,
+        historyAction: state.historyAction,
+        revalidation: state.revalidation
       });
-      
-      if (state.navigation.state === 'idle' && state.initialized) {
-        const location = state.location;
-        const routeName = this._findRouteByPath(location.pathname);
-        
-        console.log('📍 Route found:', routeName, 'for path:', location.pathname);
 
-        if (routeName) {
-          const config = this._routeConfig.get(routeName);
-          const params = this._extractParams(config.path, location.pathname);
-
-          // Parse query params
-          const query = {};
-          const searchParams = new URLSearchParams(location.search);
-          searchParams.forEach((value, key) => {
-            query[key] = value;
-          });
-
-          const newRoute = {
-            name: routeName,
-            params: { ...params, ...query },
-            query,
-            subroute: undefined,
-            component: config.component,
-            handler: () => {
-              console.log('🎯 Executing handler for:', routeName);
-              if (config.action) {
-                config.action();
-              }
-            }
-          };
-
-          // Check for interception
-          const currentRouteName = this.currentRoute?.name;
-          const currentRouteParams = this.currentRoute?.params;
-          const routeFrom = this.navigationStack.createRoute(currentRouteName, currentRouteParams);
-          const routeTo = this.navigationStack.createRoute(newRoute.name, newRoute.params);
-
-          const interceptorResult = this.intercept(routeFrom, routeTo);
-
-          if (interceptorResult.intercept) {
-            this.isNavigationInProgress = false;
-            if (interceptorResult.redirect) {
-              this.goReplacing(
-                interceptorResult.redirect.page,
-                interceptorResult.redirect.params
-              );
-            } else {
-              this.go(currentRouteName, currentRouteParams, false);
-              this.cancelledNavigation = currentRouteName;
-            }
-            if (this.channelManager) {
-              setTimeout(() => {
-                const interceptedNavigation = {
-                  from: {
-                    page: interceptorResult.from.page,
-                    params: interceptorResult.from.params,
-                  },
-                  to: { page: interceptorResult.to.page, params: interceptorResult.to.params },
-                };
-                this.channelManager?.publishInterceptedNavigation(interceptedNavigation);
-              }, 0);
-            }
-            return;
-          }
-
-          // Update navigation stack
-          const newRouteName = this.navigationStack.update(routeFrom, routeTo)?.page;
-          if (newRouteName && newRouteName !== routeTo.page) {
-            this.go(newRouteName, undefined, false);
-            return;
-          }
-
-          this._currentRoute = newRoute;
-          this.currentRoute.handler();
-          this.handler(this.currentRoute);
-          
-          // DO NOT reset isNavigationInProgress here
-          // It will be reset by TEMPLATE_TRANSITION_END event
-        }
+      if (!state.initialized) {
+        console.log('[router][state] Aún no está inicializado; esperando primer ciclo de carga.');
+        return;
       }
+
+      const location = state.location;
+      const routeName = this._findRouteByPath(location.pathname);
+
+      if (!routeName) {
+        console.warn('[router][error] Ruta no encontrada para:', location.pathname);
+        return;
+      }
+
+      console.log('[router][route] Ruta resuelta:', routeName, 'para', location.pathname);
+
+      const config = this._routeConfig.get(routeName);
+      const snapshot = this._createRouteSnapshot(state, config);
+      console.log('[router][snapshot]', snapshot);
+      const currentRouteName = this.currentRoute?.name;
+      const currentRouteParams = this.currentRoute?.params;
+      const routeFrom = this.navigationStack.createRoute(currentRouteName, currentRouteParams);
+      const routeTo = this.navigationStack.createRoute(snapshot.name, snapshot.params);
+
+      const interceptorResult = this.intercept(routeFrom, routeTo);
+
+      if (snapshot.error) {
+        console.warn('[router][error] Error de ruta detectado:', snapshot.error);
+      }
+
+      if (snapshot.pending) {
+        console.log('[router][navegacion] transición pendiente para:', snapshot.name);
+      }
+
+      if (snapshot.revalidating) {
+        console.log('[router][revalidacion] revalidando loaders para:', snapshot.name);
+      }
+
+      if (interceptorResult.intercept) {
+        this.isNavigationInProgress = false;
+        if (interceptorResult.redirect) {
+          this.goReplacing(interceptorResult.redirect.page, interceptorResult.redirect.params);
+        } else {
+          this.go(currentRouteName, currentRouteParams, false);
+          this.cancelledNavigation = currentRouteName;
+        }
+        if (this.channelManager) {
+          setTimeout(() => {
+            const interceptedNavigation = {
+              from: {
+                page: interceptorResult.from.page,
+                params: interceptorResult.from.params,
+              },
+              to: { page: interceptorResult.to.page, params: interceptorResult.to.params },
+            };
+            this.channelManager?.publishInterceptedNavigation(interceptedNavigation);
+          }, 0);
+        }
+        return;
+      }
+
+      const newRouteName = this.navigationStack.update(routeFrom, routeTo)?.page;
+      if (newRouteName && newRouteName !== routeTo.page) {
+        this.go(newRouteName, undefined, false);
+        return;
+      }
+
+      this._applyRouteSnapshot(snapshot);
+      if (snapshot.handler) {
+        snapshot.handler();
+      }
+      this.handler(this.currentRoute);
     });
 
-    // Initialize the router
+    console.log('[router][start] Inicializando instancia de Remix Router');
     this._remixRouter.initialize();
-    
-    // Force initial route handling
+
     const initialLocation = this._history.location;
     const initialRouteName = this._findRouteByPath(initialLocation.pathname);
+
     if (initialRouteName) {
       const config = this._routeConfig.get(initialRouteName);
-      const params = this._extractParams(config.path, initialLocation.pathname);
-      
-      const query = {};
-      const searchParams = new URLSearchParams(initialLocation.search);
-      searchParams.forEach((value, key) => {
-        query[key] = value;
-      });
-      
-      this._currentRoute = {
-        name: initialRouteName,
-        params: { ...params, ...query },
-        query,
-        subroute: undefined,
-        component: config.component,
-        handler: () => {
-          if (config.action) {
-            config.action();
-          }
-        }
-      };
-      
-      // Execute the handler for the initial route
-      this._currentRoute.handler();
-      this.handler(this._currentRoute);
+      const snapshot = this._createRouteSnapshot(
+        {
+          location: initialLocation,
+          navigation: { state: 'idle' },
+          revalidation: 'idle',
+          loaderData: {},
+          actionData: null,
+          errors: null,
+          matches: [{ route: { id: initialRouteName }, params: this._extractParams(config.path, initialLocation.pathname) }],
+          historyAction: 'POP'
+        },
+        config
+      );
+
+      this._applyRouteSnapshot(snapshot);
+      console.log('[router][start] Ejecutando handler inicial para:', snapshot.name);
+      if (snapshot.handler) {
+        snapshot.handler();
+      }
+      this.handler(this.currentRoute);
     }
   }
 
@@ -561,6 +649,11 @@ export class Router {
    * Stops the router and cleans up any resources.
    */
   stop() {
+    if (this._unsubscribeRemixRouter) {
+      this._unsubscribeRemixRouter();
+      this._unsubscribeRemixRouter = null;
+    }
+
     if (this._remixRouter) {
       this._remixRouter.dispose();
       this._remixRouter = null;
@@ -719,10 +812,7 @@ export class Router {
    * @param {boolean} [skipHistory=false] - Whether to skip adding the navigation to the history.
    */
   go(name, params = undefined, replace = false, skipHistory = false) {
-    console.log('🚀 go() called:', { name, params, replace, skipHistory });
-    
     if (this.isNavigationInProgress) {
-      console.log('⚠️ Navigation in progress, skipping');
       return;
     }
 
@@ -735,14 +825,14 @@ export class Router {
 
     const sanitizedName = name.replace(/^\/(\b)/, '');
     const path = this.getPath(sanitizedName, params);
-    
-    console.log('📍 Generated path:', path, 'current:', this._getHashPath());
+
+    console.log('[router][navigation] go() llamado:', { name, params, replace, skipHistory });
+    console.log('[router][navigation] path generado:', path, 'actual:', this._getHashPath());
 
     if (path && path !== this._getHashPath()) {
       this.isNavigationInProgress = true;
+      console.log('[router][navigation] updatePathInBrowser:', { path, replace });
       this.updatePathInBrowser(path, replace);
-    } else {
-      console.log('⚠️ Path is same as current or invalid');
     }
   }
 
@@ -794,21 +884,18 @@ export class Router {
    * @param {boolean} replace - Indicates whether to replace the current history state or push a new one.
    */
   updatePathInBrowser(path, replace) {
-    console.log('🌐 updatePathInBrowser:', { path, replace });
-
     if (this._remixRouter) {
-      // Use router.navigate to update the URL and notify subscribers.
-      // createHashHistory handles pushing to / replacing window.location.hash.
-      this._remixRouter.navigate(path, { replace }).then(() => {
-        console.log('✅ Navigation completed');
-        // DO NOT reset isNavigationInProgress here
-        // It will be reset by TEMPLATE_TRANSITION_END event
+      this._remixRouter.navigate(path, {
+        replace,
+        preventScrollReset: true
+      }).then(() => {
+        console.log('[router][navigation] transición completada');
       }).catch(err => {
-        console.error('❌ Navigation error:', err);
-        this.isNavigationInProgress = false; // Reset only on error
+        console.error('[router][error] error de navegación:', err);
+        this.isNavigationInProgress = false;
       });
     } else {
-      console.log('❌ No remix router available');
+      console.log('[router][error] no hay remix router disponible');
       this.isNavigationInProgress = false;
     }
   }

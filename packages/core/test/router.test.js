@@ -17,9 +17,41 @@
 import { expect } from '@esm-bundle/chai';
 import sinon from 'sinon';
 import { Route } from '../src/route';
+import { Router } from '../src/router';
 
 describe('Router', () => {
   let route;
+
+  describe('#_createRouteSnapshot', () => {
+    it('should build an internal route snapshot from remix router state', () => {
+      const router = new Router();
+      const state = {
+        location: { pathname: '/test/42', search: '?foo=bar' },
+        navigation: { state: 'loading' },
+        revalidation: 'loading',
+        loaderData: { home: { ok: true } },
+        actionData: { home: { submitted: true } },
+        errors: null,
+        matches: [{ route: { id: 'home' }, params: { id: '42' } }],
+        historyAction: 'PUSH'
+      };
+
+      const snapshot = router._createRouteSnapshot(state, {
+        path: '/test/:id',
+        component: 'home-component'
+      });
+
+      expect(snapshot.name).to.equal('home');
+      expect(snapshot.params).to.deep.equal({ id: '42', foo: 'bar' });
+      expect(snapshot.query).to.deep.equal({ foo: 'bar' });
+      expect(snapshot.pending).to.equal(true);
+      expect(snapshot.revalidating).to.equal(true);
+      expect(snapshot.historyAction).to.equal('PUSH');
+      expect(snapshot.component).to.equal('home-component');
+      expect(snapshot.loaderData).to.deep.equal({ ok: true });
+      expect(snapshot.actionData).to.deep.equal({ submitted: true });
+    });
+  });
 
   beforeEach(() => {
     route = new Route('test', '/test/:id', () => {});

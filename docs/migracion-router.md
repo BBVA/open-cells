@@ -11,7 +11,7 @@
 
 ## Resumen Ejecutivo
 
-Se ha realizado una migración completa del sistema de routing de Open Cells, reemplazando la implementación personalizada basada en RxJS por `@remix-run/router` (la librería estándar de routing utilizada por React Router). 
+Se ha realizado una migración completa del sistema de routing de Open Cells, reemplazando la implementación personalizada basada en RxJS por `@remix-run/router` (la librería estándar de routing utilizada por React Router).
 
 **✅ Estado**: La migración es **funcional** y la navegación funciona correctamente. Se han identificado y solucionado problemas críticos durante la implementación.
 
@@ -99,6 +99,35 @@ if (initialRouteName) {
 - **Documentación completa**: Amplia documentación y ejemplos de la comunidad
 - **Mantenimiento activo**: Equipo dedicado de Remix manteniendo la librería
 - **Funcionalidades avanzadas**: Soporte nativo para lazy loading, data loading, error boundaries, etc.
+
+## Por qué estos cambios respecto al modelo anterior
+
+La implementación previa estaba basada en un flujo imperativo y propio: la navegación se resolvía en el wrapper, se actualizaba un stack interno de navegación y luego se ejecutaba manualmente un `handler()` para notificar a la capa superior. Ese modelo funcionaba para el caso simple de “cambiar URL y renderizar”, pero tenía dos problemas técnicos importantes:
+
+1. **Estado disperso y no canónico**: el router legado mantenía su propio estado (`currentRoute`, `navigationStack`, `isNavigationInProgress`, `hashIsDirty`) y además dependía de eventos externos del historial y de la capa de bridge. Eso provocaba que la fuente de verdad estuviera repartida entre varios subsistemas.
+2. **Riesgo de races y desincronización**: en presencia de navegación programática, popstate, interceptores y revalidaciones, el orden de ejecución podía cambiar y terminar en renderizados tardíos o en rutas que no correspondían al último estado real del navegador.
+3. **Falta de modelado de estados de datos**: el viejo flujo no distinguía entre `idle`, `loading`, `submitting` ni entre `loaderData`, `actionData`, `errors` y `fetchers`. Eso lo hacía poco adecuado para un motor de routing orientado a datos.
+
+La nueva integración, en cambio, transforma el wrapper en un adaptador del contrato real de `@remix-run/router`:
+
+- El estado de la aplicación se deriva de `router.state` en lugar de construirse manualmente en cada transición.
+- La navegación pasa por `router.navigate()` para que el engine controle de forma nativa el historial, los popstates y las transiciones concurrentes.
+- Se introducen snapshots internos que capturan `pending`, `revalidating`, `historyAction`, `loaderData`, `actionData`, `error` y `matches`, manteniendo intacta la API pública de Open Cells.
+- El wrapper conserva la compatibilidad con el código existente mediante una capa de adaptación que sigue exponiendo `go()`, `back()`, `goReplacing()`, `currentRoute` y `handler()`, pero ahora esas entradas se sincronizan con el estado real del router internamente.
+
+En otras palabras, el cambio no es solo “usar otra librería”, sino pasar de un modelo de routing basado en eventos y callbacks manuales a un modelo basado en un estado unificado y un ciclo de vida de navegación más cercano al de Remix/React Router. Esto reduce drift de estado, facilita la observabilidad y prepara la capa para manejar revalidaciones y errores de ruta de forma mucho más robusta sin romper la integración actual.
+
+### Resumen before/after
+
+| Aspecto | Antes | Después |
+|---|---|---|
+| Fuente de verdad | Estado disperso entre wrapper, stack interno y bridge | Estado unificado derivado de `router.state` |
+| Navegación | Lógica manual y dependiente de eventos externos | `router.navigate()` como punto único de entrada |
+| Renderizado | `handler()` manual tras cada cambio | Sincronización basada en snapshots del router |
+| Pending / revalidación | No modelado explícitamente | `pending`, `revalidating`, `navigation.state` visibles internamente |
+| Errores | Muy acoplado a la lógica del wrapper | Preparado para integrar `errors`, `actionData` y `loaderData` |
+| Scroll / history | Muy dependiente del historial manual | `preventScrollReset` y restauración de scroll controlados por el engine |
+| Compatibilidad | API propia y cerrada | API pública preservada, implementación interna adaptada |
 
 ## Cambios Realizados
 
@@ -237,7 +266,7 @@ start() {
 go(name, params = undefined, replace = false, skipHistory = false) {
   // 1. Obtiene el path para la ruta
   const path = this.getPath(name, params);
-  
+
   // 2. Actualiza el historial de memoria
   if (this._history) {
     if (replace) {
@@ -304,10 +333,10 @@ back() {
   if (this.navigationStack.length > 1) {
     let fromRoute = this.navigationStack.pop();
     let backRoute = this.getLastRoute();
-    
+
     const page = backRoute?.page;
     const params = backRoute?.params;
-    
+
     if (page) {
       this.go(page, params);  // Reutiliza método go()
     }
@@ -326,19 +355,19 @@ back() {
 this._remixRouter.subscribe((state) => {
   if (state.navigation.state === 'idle' && state.initialized) {
     const location = state.location;
-    
+
     // 1. Encuentra la ruta por path
     const routeName = this._findRouteByPath(location.pathname);
-    
+
     // 2. Extrae parámetros
     const params = this._extractParams(config.path, location.pathname);
-    
+
     // 3. Parsea query params
     const query = {};
     new URLSearchParams(location.search).forEach((value, key) => {
       query[key] = value;
     });
-    
+
     // 4. Crea objeto de ruta compatible
     const newRoute = {
       name: routeName,
@@ -346,7 +375,7 @@ this._remixRouter.subscribe((state) => {
       query,
       handler: () => config.action?.()
     };
-    
+
     // 5. Actualiza estado
     this._currentRoute = newRoute;
     this.handler(this.currentRoute);  // Notifica a bridge.js
@@ -767,7 +796,7 @@ startApp({
 
 **Probabilidad**: Baja
 **Impacto**: Alto
-**Mitigación**: 
+**Mitigación**:
 - API pública 100% preservada
 - Tests de integración en blank-app
 - Validación exhaustiva de bridge.js
