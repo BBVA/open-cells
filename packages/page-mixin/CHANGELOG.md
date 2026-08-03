@@ -1,5 +1,11 @@
 # @open-cells/page-mixin
 
+## 1.2.4
+
+### Patch Changes
+
+- @open-cells/core-plugin@1.2.4
+
 ## 1.2.3
 
 ### Patch Changes

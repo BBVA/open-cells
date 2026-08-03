@@ -1,5 +1,11 @@
 # @open-cells/element-controller
 
+## 1.0.6
+
+### Patch Changes
+
+- @open-cells/core-plugin@1.2.4
+
 ## 1.0.5
 
 ### Patch Changes

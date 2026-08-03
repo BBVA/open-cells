@@ -1,5 +1,11 @@
 # @open-cells/core
 
+## 1.2.1
+
+### Patch Changes
+
+- fa9db76: fix: private channels stopped after logout
+
 ## 1.2.0
 
 ### Minor Changes

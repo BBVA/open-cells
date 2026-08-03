@@ -76,26 +76,19 @@ export class Channel extends ReplaySubject {
     return this.observed;
   }
 
-  // /**
-  //  * Unsubscribes an observer from the channel.
-  //  *
-  //  * @param {number} index - The index of the observer to unsubscribe.
-  //  * @returns {void}
-  //  */
-  // unsubscribeObserver(index) {
-  //   this.observers?.splice(index, 1);
-  //   if (this.observers?.length === 0) {
-  //     this.unsubscribe();
-  //   }
-  // }
-
   /** 
    * Unsubscribes all observers from the channel keeping the channel open.
    */
   unsubscribe() {
-    super.unsubscribe();
+    const observers = this.observers || [];
+
+    observers.slice().forEach(observer => observer.unsubscribe());
+    this.observers = [];
+    this.currentObservers = null;
     this.closed = false;
-    this.stoped = false;
+    this.isStopped = false;
+    this.hasError = false;
+    this.thrownError = null;
   }
 
   /** 
