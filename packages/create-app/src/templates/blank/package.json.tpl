@@ -1,9 +1,9 @@
 {
   "private": true,
-  "name": "blank-app",
-  "description": "An application built using Open Cells and Lit",
-  "license": "Apache-2.0",
-  "version": "0.1.5",
+  "name": "{{ name }}",
+  "description": "An Open Cells application built with Lit",
+  "license": "MIT",
+  "version": "0.1.0",
   "type": "module",
   "scripts": {
     "dev": "vite",
@@ -11,9 +11,9 @@
     "preview": "npm run build && vite preview"
   },
   "dependencies": {
-    "@open-cells/core": "^1.2.0",
-    "@open-cells/element-controller": "^1.0.5",
-    "@open-cells/page-controller": "^1.0.5",
+    "@open-cells/core": "^1.2.1",
+    "@open-cells/element-controller": "^1.0.6",
+    "@open-cells/page-controller": "^1.0.6",
     "lit": "^3.3.3"
   },
   "devDependencies": {

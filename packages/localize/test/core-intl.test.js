@@ -14,7 +14,8 @@
  * limitations under the License.
  */
 
-import { fixtureCleanup, oneEvent, expect } from '@open-wc/testing';
+import { afterEach, beforeAll, beforeEach, describe, expect, it } from 'vitest';
+import { fixtureCleanup, oneEvent } from './test-helpers.js';
 import * as intl from '../index.js';
 
 const { t, intlState } = intl;
@@ -24,7 +25,7 @@ describe('core intl methods', () => {
   let key;
   let lang;
 
-  before(async () => {
+  beforeAll(async () => {
     intl.resetIntl();
     intl.setLocalesHost('./test');
     intl.requestResources();
@@ -46,7 +47,7 @@ describe('core intl methods', () => {
     it('t method translates according to language', () => {
       key = 'simple-key';
       const translation = t(key);
-      expect(translation).to.be.equal(resources[lang][key]);
+      expect(translation).toBe(resources[lang][key]);
     });
 
     it('removing lang returns null', () => {
@@ -54,7 +55,7 @@ describe('core intl methods', () => {
       key = 'simple-key';
       intl.setLang('');
       const translation = t(key);
-      expect(translation).to.be.null;
+      expect(translation).toBeNull();
 
       intl.setLang(prevLang);
     });
@@ -63,23 +64,23 @@ describe('core intl methods', () => {
       intl.setLang('es');
       key = 'simple-key';
       const translation = t(key);
-      expect(translation).to.be.equal(resources.es[key]);
+      expect(translation).toBe(resources.es[key]);
     });
 
     it('t with no key returns null', () => {
       key = '';
       const translation = t(key);
-      expect(translation).to.be.null;
+      expect(translation).toBeNull();
     });
 
     it('t with non-existing key returns null', () => {
       key = 'non-existing-key';
       const translation = t(key);
-      expect(translation).to.be.null;
+      expect(translation).toBeNull();
     });
 
     it('intlState has access to current config values', () => {
-      expect(intlState.lang).to.be.equal(lang);
+      expect(intlState.lang).toBe(lang);
     });
 
     describe('fallbacks', () => {
@@ -89,7 +90,7 @@ describe('core intl methods', () => {
 
         key = 'specific-only-lang-key';
         const translation = t(key);
-        expect(translation).to.be.equal(resources['en-US'][key]);
+        expect(translation).toBe(resources['en-US'][key]);
 
         intl.setLang(prevLang);
       });
@@ -100,7 +101,7 @@ describe('core intl methods', () => {
 
         key = 'specific-only-lang-key';
         const translation = t(key);
-        expect(translation).to.be.null;
+        expect(translation).toBeNull();
 
         intl.setLang(prevLang);
       });
@@ -111,7 +112,7 @@ describe('core intl methods', () => {
 
         key = 'simple-key';
         const translation = t(key);
-        expect(translation).to.be.equal(resources.en[key]);
+        expect(translation).toBe(resources.en[key]);
 
         intl.setLang(prevLang);
       });
@@ -122,7 +123,7 @@ describe('core intl methods', () => {
 
         key = 'base-override-lang-key';
         const translation = t(key);
-        expect(translation).to.be.equal(resources['en-US'][key]);
+        expect(translation).toBe(resources['en-US'][key]);
 
         intl.setLang(prevLang);
       });
@@ -133,7 +134,7 @@ describe('core intl methods', () => {
 
         key = 'base-override-lang-key';
         const translation = t(key);
-        expect(translation).to.be.equal(resources.en[key]);
+        expect(translation).toBe(resources.en[key]);
 
         intl.setLang(prevLang);
       });
@@ -149,10 +150,11 @@ describe('core intl methods', () => {
     it('updating document language updates intl language', async () => {
       key = 'simple-key';
       const oldLang = document.documentElement.lang;
+      const statusChange = oneEvent(window, 'app-localize-status-change');
       document.documentElement.setAttribute('lang', 'es');
-      await oneEvent(window, 'app-localize-status-change');
+      await statusChange;
       const translation = t(key);
-      expect(translation).to.be.equal(resources.es[key]);
+      expect(translation).toBe(resources.es[key]);
       document.documentElement.setAttribute('lang', oldLang);
     });
   });

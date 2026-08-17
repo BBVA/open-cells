@@ -1,6 +1,6 @@
 {
   "name": "@open-cells/create-app",
-  "version": "1.1.1",
+  "version": "1.2.0",
   "description": "Scaffold for Open Cells apps",
   "license": "MIT",
   "type": "module",
@@ -10,7 +10,7 @@
   },
   "scripts": {
     "start": "node ./src/create.js",
-    "update": "node ./scripts/update.js",
+    "test": "vitest run",
     "release": "changeset publish"
   },
   "files": [
@@ -24,15 +24,11 @@
     "create"
   ],
   "dependencies": {
-    "@open-wc/create": "^0.37.95",
-    "chalk": "^4.1.0",
-    "command-line-args": "^5.1.1",
-    "glob": "^10.3.10",
-    "prompts": "^2.4.1",
-    "semver": "^7.3.5"
+    "@inquirer/prompts": "~8.3.0"
   },
   "devDependencies": {
-    "@changesets/cli": "^2.16.0"
+    "@changesets/cli": "^2.16.0",
+    "vitest": "^3.0.0"
   },
   "prettier": {
     "singleQuote": true,

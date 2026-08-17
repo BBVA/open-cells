@@ -14,7 +14,8 @@
  * limitations under the License.
  */
 
-import { expect, fixtureCleanup } from '@open-wc/testing';
+import { afterAll, afterEach, beforeEach, describe, expect, it } from 'vitest';
+import { fixtureCleanup } from './test-helpers.js';
 import * as intl from '../index.js';
 
 const { intlState } = intl;
@@ -26,7 +27,7 @@ describe('bundles', () => {
     fixtureCleanup();
   });
 
-  after(() => {
+  afterAll(() => {
     intl.resetIntl();
     intl.setUseBundles(false);
   });
@@ -44,8 +45,8 @@ describe('bundles', () => {
     });
 
     it('resources has key from bundle A but not from bundle B on init', () => {
-      expect(resources.en['key-a']).to.be.equal('Value A');
-      expect(resources.en['key-b']).to.be.undefined;
+      expect(resources.en['key-a']).toBe('Value A');
+      expect(resources.en['key-b']).toBeUndefined();
     });
 
     it('loading bundle B removes bundle A from resources', async () => {
@@ -53,21 +54,21 @@ describe('bundles', () => {
       await intlState.resourcesLoadComplete;
       resources = intlState.getResources();
 
-      expect(resources.en['key-a']).to.be.undefined;
-      expect(resources.en['key-b']).to.be.equal('Value B');
+      expect(resources.en['key-a']).toBeUndefined();
+      expect(resources.en['key-b']).toBe('Value B');
     });
 
     it('use bundles can be set after initial resources have been loaded', async () => {
-      expect(resources.en['key-a']).to.be.equal('Value A');
-      expect(resources.en['key-b']).to.be.undefined;
+      expect(resources.en['key-a']).toBe('Value A');
+      expect(resources.en['key-b']).toBeUndefined();
 
       intl.setUseBundles(true);
       intl.setUrl('locales/bundle-b.json');
       await intlState.resourcesLoadComplete;
       resources = intlState.getResources();
 
-      expect(resources.en['key-a']).to.be.equal('Value A');
-      expect(resources.en['key-b']).to.be.equal('Value B');
+      expect(resources.en['key-a']).toBe('Value A');
+      expect(resources.en['key-b']).toBe('Value B');
     });
   });
 
@@ -84,8 +85,8 @@ describe('bundles', () => {
     });
 
     it('resources has key from bundle A but not from bundle B on init', () => {
-      expect(resources.en['key-a']).to.be.equal('Value A');
-      expect(resources.en['key-b']).to.be.undefined;
+      expect(resources.en['key-a']).toBe('Value A');
+      expect(resources.en['key-b']).toBeUndefined();
     });
 
     it('loading bundle B does not remove bundle A from resources', async () => {
@@ -93,8 +94,8 @@ describe('bundles', () => {
       await intlState.resourcesLoadComplete;
       resources = intlState.getResources();
 
-      expect(resources.en['key-a']).to.be.equal('Value A');
-      expect(resources.en['key-b']).to.be.equal('Value B');
+      expect(resources.en['key-a']).toBe('Value A');
+      expect(resources.en['key-b']).toBe('Value B');
     });
   });
 });

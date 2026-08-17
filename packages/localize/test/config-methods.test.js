@@ -14,8 +14,8 @@
  * limitations under the License.
  */
 
-import { expect, fixtureCleanup } from '@open-wc/testing';
-import sinon from 'sinon';
+import { afterEach, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
+import { fixtureCleanup } from './test-helpers.js';
 import * as intl from '../index.js';
 
 const { t, intlState } = intl;
@@ -25,7 +25,7 @@ describe('config methods', () => {
   let key;
   let lang;
 
-  before(async () => {
+  beforeAll(async () => {
     intl.resetIntl();
     intl.setLocalesHost('./test');
     intl.setUrl('locales/locales.json');
@@ -49,7 +49,7 @@ describe('config methods', () => {
       intl.setLang('es');
       key = 'simple-key';
       const translation = t(key);
-      expect(translation).to.be.equal(resources.es[key]);
+      expect(translation).toBe(resources.es[key]);
     });
 
     it('setLocalesHost updates current resources', async () => {
@@ -59,7 +59,7 @@ describe('config methods', () => {
 
       key = 'simple-key';
       const translation = t(key);
-      expect(translation).to.be.equal(resources[lang][key]);
+      expect(translation).toBe(resources[lang][key]);
 
       intl.setLocalesHost('./test');
       await intlState.resourcesLoadComplete;
@@ -73,7 +73,7 @@ describe('config methods', () => {
 
       key = 'simple-key';
       const translation = t(key);
-      expect(translation).to.be.equal(resources[lang][key]);
+      expect(translation).toBe(resources[lang][key]);
 
       intl.setUrl('locales/locales.json');
       await intlState.resourcesLoadComplete;
@@ -81,18 +81,18 @@ describe('config methods', () => {
     });
 
     it('non-existing url shows error in console', async () => {
-      const stub = sinon.stub(console, 'error');
-      expect(stub.notCalled).to.be.true;
+      const stub = vi.spyOn(console, 'error').mockImplementation(() => {});
+      expect(stub).not.toHaveBeenCalled();
 
       intl.setUrl('non-existing-locales.json');
       await intlState.resourcesLoadComplete;
 
-      expect(stub.calledOnce).to.be.true;
+      expect(stub).toHaveBeenCalledTimes(1);
 
       intl.setUrl('locales/locales.json');
       await intlState.resourcesLoadComplete;
       resources = intlState.getResources();
-      stub.restore();
+      stub.mockRestore();
     });
 
     it('url can be used without localesHost', async () => {
@@ -105,7 +105,7 @@ describe('config methods', () => {
 
       key = 'simple-key';
       const translation = t(key);
-      expect(translation).to.be.equal(resources[lang][key]);
+      expect(translation).toBe(resources[lang][key]);
 
       intl.resetIntl();
       intl.setLocalesHost('./test');
@@ -117,14 +117,14 @@ describe('config methods', () => {
 
     it('setWarnOnMissingKeys invokes console warns when key is missing', () => {
       intl.setWarnOnMissingKeys(true);
-      const stub = sinon.stub(console, 'warn');
-      expect(stub.notCalled).to.be.true;
+      const stub = vi.spyOn(console, 'warn').mockImplementation(() => {});
+      expect(stub).not.toHaveBeenCalled();
 
       key = 'non-existing-key';
       t(key);
-      expect(stub.calledOnce).to.be.true;
+      expect(stub).toHaveBeenCalledTimes(1);
 
-      stub.restore();
+      stub.mockRestore();
       intl.setWarnOnMissingKeys(false);
     });
 
@@ -134,7 +134,7 @@ describe('config methods', () => {
       await intlState.resourcesLoadComplete;
       resources = intlState.getResources();
 
-      expect(resources).to.deep.equal(currentResources);
+      expect(resources).toEqual(currentResources);
 
       intl.setUrl('locales/locales.json');
       await intlState.resourcesLoadComplete;

@@ -14,8 +14,9 @@
  * limitations under the License.
  */
 
-import { fixture, html, expect, fixtureCleanup } from '@open-wc/testing';
-import { html as litHtml } from 'lit';
+import { afterEach, beforeAll, beforeEach, describe, expect, it } from 'vitest';
+import { html } from 'lit';
+import { fixture, fixtureCleanup } from './test-helpers.js';
 import * as intl from '../index.js';
 
 const { t, intlState } = intl;
@@ -24,7 +25,7 @@ describe('formats', () => {
   let key;
   let lang;
 
-  before(async () => {
+  beforeAll(async () => {
     intl.resetIntl();
     intl.setLocalesHost('./test');
     intl.requestResources();
@@ -44,14 +45,14 @@ describe('formats', () => {
     it('simple key', () => {
       key = 'simple-key';
       const translation = t(key);
-      expect(translation).to.be.equal('This is a value');
+      expect(translation).toBe('This is a value');
     });
 
     it('key with html', async () => {
       key = 'html-key';
-      const translation = t(key, { b: chunks => litHtml`<strong>${chunks}</strong>` });
+      const translation = t(key, { b: chunks => html`<strong>${chunks}</strong>` });
       const renderedItem = await fixture(html`<div>${translation}</div>`);
-      expect(renderedItem.innerHTML.replace(/<!--.*?-->/g, '')).to.be.equal(
+      expect(renderedItem.innerHTML.replace(/<!--.*?-->/g, '')).toBe(
         'This is a <strong>value</strong>',
       );
     });
@@ -59,25 +60,25 @@ describe('formats', () => {
     it('key with plurals, 0', () => {
       key = 'simple-key-plural';
       const translation = t(key, { numItems: 0 });
-      expect(translation).to.be.equal('You have no items.');
+      expect(translation).toBe('You have no items.');
     });
 
     it('key with plurals, 1', () => {
       key = 'simple-key-plural';
       const translation = t(key, { numItems: 1 });
-      expect(translation).to.be.equal('You have one item.');
+      expect(translation).toBe('You have one item.');
     });
 
     it('key with plurals, 5', () => {
       key = 'simple-key-plural';
       const translation = t(key, { numItems: 5 });
-      expect(translation).to.be.equal('You have 5 items.');
+      expect(translation).toBe('You have 5 items.');
     });
 
     it('date key', () => {
       key = 'simple-key-intl-date-lang-demo';
       const translation = t(key, { exampleDate: new Date('2024-02-20') });
-      expect(translation).to.be.equal('The date is February 20, 2024');
+      expect(translation).toBe('The date is February 20, 2024');
     });
 
     it('currency options key, alternative formats', () => {
@@ -92,7 +93,7 @@ describe('formats', () => {
       });
       key = 'simple-key-currency';
       const translation = t(key, { exampleBalance: 3600.12 });
-      expect(translation).to.be.equal('Your available balance is $3,600.12');
+      expect(translation).toBe('Your available balance is $3,600.12');
 
       intl.setFormats({});
     });

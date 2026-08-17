@@ -15,9 +15,9 @@
  */
 
 /* eslint-disable max-classes-per-file */
-import { fixture, html, expect, fixtureCleanup } from '@open-wc/testing';
-import { LitElement, html as litHtml } from 'lit';
-import sinon from 'sinon';
+import { afterEach, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
+import { LitElement, html } from 'lit';
+import { fixture, fixtureCleanup } from './test-helpers.js';
 import * as intl from '../index.js';
 
 const { LocalizeMixin, intlState } = intl;
@@ -28,7 +28,7 @@ class BaseTestElement extends LitElement {
   }
 
   render() {
-    return litHtml`
+    return html`
     <p>${this.t('simple-key')}</p>
   `;
   }
@@ -41,7 +41,7 @@ describe('mixins', () => {
   let resources;
   let lang;
 
-  before(async () => {
+  beforeAll(async () => {
     intl.resetIntl();
     intl.setLocalesHost('./test');
   });
@@ -64,20 +64,20 @@ describe('mixins', () => {
 
     it('t method translates according to language', () => {
       const translation = el.getText(0);
-      expect(translation).to.be.equal(resources[lang]['simple-key']);
+      expect(translation).toBe(resources[lang]['simple-key']);
     });
 
     it('inner property has access to intl state', async () => {
       intl.setLang('es');
       await el.updateComplete;
-      expect(el._intlConfig.lang).to.be.equal('es');
+      expect(el._intlConfig.lang).toBe('es');
     });
 
     it('changing language updates text', async () => {
       intl.setLang('es');
       await el.updateComplete;
       const translation = el.getText(0);
-      expect(translation).to.be.equal(resources.es['simple-key']);
+      expect(translation).toBe(resources.es['simple-key']);
     });
   });
 
@@ -87,19 +87,19 @@ describe('mixins', () => {
     });
 
     it('multiple elements only request resources once', async () => {
-      const spy = sinon.spy();
+      const spy = vi.fn();
       window.addEventListener('app-localize-resources-loaded', spy);
-      expect(spy.notCalled).to.be.true;
+      expect(spy).not.toHaveBeenCalled();
 
       el = await fixture(html` <test-element></test-element> `);
       await el.updateComplete;
       await intlState.resourcesLoadComplete;
-      expect(spy.calledOnce).to.be.true;
+      expect(spy).toHaveBeenCalledTimes(1);
 
       el = await fixture(html` <test-element></test-element> `);
       await el.updateComplete;
       await intlState.resourcesLoadComplete;
-      expect(spy.calledOnce).to.be.true;
+      expect(spy).toHaveBeenCalledTimes(1);
 
       window.removeEventListener('app-localize-resources-loaded', spy);
     });

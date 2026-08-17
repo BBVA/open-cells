@@ -1,5 +1,11 @@
 # @open-cells/localize
 
+## 1.2.0
+
+### Minor Changes
+
+- 43b5911: rewrite due to removal of old dependencies
+
 ## 1.1.2
 
 ### Patch Changes

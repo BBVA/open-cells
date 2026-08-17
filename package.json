@@ -61,10 +61,5 @@
     "packages/*",
     "packages/labs/*",
     "packages/example/*"
-  ],
-  "overrides": {
-    "glob": "11.1.0",
-    "brace-expansion": "5.0.9",
-    "ejs": "5.0.1"
-  }
+  ]
 }

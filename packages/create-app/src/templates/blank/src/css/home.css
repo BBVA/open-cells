@@ -1,0 +1,73 @@
+home-page {
+  display: flex;
+  flex-direction: column;
+  padding: 3rem 1.5rem;
+  min-height: 100%;
+}
+
+home-page .hero {
+  max-width: 560px;
+}
+
+home-page .hero .pretitle {
+  margin: 0;
+  font-size: 0.875rem;
+  line-height: 1rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  color: var(--color-core-blue);
+}
+
+home-page .hero h1 {
+  font-size: clamp(2rem, 5vw, 3.5rem);
+  font-weight: 700;
+  line-height: 1.15;
+  color: var(--color-core-blue);
+  margin: 1rem 0;
+}
+
+home-page .hero p {
+  font-size: 1.125rem;
+  font-weight: 300;
+  line-height: 1.625rem;
+  color: var(--color-blue-dark);
+  margin: 0 0 2rem;
+}
+
+home-page .features {
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+  max-width: 560px;
+}
+
+home-page .feature {
+  display: flex;
+  align-items: flex-start;
+  gap: 1rem;
+}
+
+home-page .feature-icon {
+  font-size: 1.5rem;
+  flex-shrink: 0;
+  width: 2rem;
+}
+
+home-page .feature-text strong {
+  display: block;
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--color-blue-dark);
+  margin-bottom: 0.25rem;
+}
+
+home-page .feature-text span {
+  font-size: 1rem;
+  font-weight: 300;
+  line-height: 1.5;
+  color: var(--color-grey);
+}
+
+@media screen and (min-width: 46.5rem) {
+  home-page { padding: 3rem; }
+}

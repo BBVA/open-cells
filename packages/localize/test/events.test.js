@@ -14,8 +14,8 @@
  * limitations under the License.
  */
 
-import { expect, fixtureCleanup } from '@open-wc/testing';
-import sinon from 'sinon';
+import { afterEach, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
+import { fixtureCleanup } from './test-helpers.js';
 import * as intl from '../index.js';
 
 const { intlState } = intl;
@@ -23,7 +23,7 @@ const { intlState } = intl;
 describe('config methods', () => {
   let lang;
 
-  before(async () => {
+  beforeAll(async () => {
     intl.resetIntl();
     intl.setLocalesHost('./test');
     intl.setUrl('locales/locales.json');
@@ -42,14 +42,14 @@ describe('config methods', () => {
     });
 
     it('loading resources fires app-localize-resources-loaded', async () => {
-      const spy = sinon.spy();
+      const spy = vi.fn();
       window.addEventListener('app-localize-resources-loaded', spy);
-      expect(spy.notCalled).to.be.true;
+      expect(spy).not.toHaveBeenCalled();
 
       intl.setUrl('locales/bundle-a.json');
       await intlState.resourcesLoadComplete;
 
-      expect(spy.calledOnce).to.be.true;
+      expect(spy).toHaveBeenCalledTimes(1);
 
       window.removeEventListener('app-localize-resources-loaded', spy);
       intl.setUrl('locales/locales.json');
@@ -57,14 +57,14 @@ describe('config methods', () => {
     });
 
     it('error loading resources fires app-localize-resources-error', async () => {
-      const spy = sinon.spy();
+      const spy = vi.fn();
       window.addEventListener('app-localize-resources-error', spy);
-      expect(spy.notCalled).to.be.true;
+      expect(spy).not.toHaveBeenCalled();
 
       intl.setUrl('locales/non-existing.json');
       await intlState.resourcesLoadComplete;
 
-      expect(spy.calledOnce).to.be.true;
+      expect(spy).toHaveBeenCalledTimes(1);
 
       window.removeEventListener('app-localize-resources-error', spy);
       intl.setUrl('locales/locales.json');
@@ -72,14 +72,14 @@ describe('config methods', () => {
     });
 
     it('loading resources fires app-localize-status-change', async () => {
-      const spy = sinon.spy();
+      const spy = vi.fn();
       window.addEventListener('app-localize-status-change', spy);
-      expect(spy.notCalled).to.be.true;
+      expect(spy).not.toHaveBeenCalled();
 
       intl.setUrl('locales/bundle-a.json');
       await intlState.resourcesLoadComplete;
 
-      expect(spy.calledOnce).to.be.true;
+      expect(spy).toHaveBeenCalledTimes(1);
 
       window.removeEventListener('app-localize-status-change', spy);
       intl.setUrl('locales/locales.json');
@@ -87,21 +87,21 @@ describe('config methods', () => {
     });
 
     it('updating lang fires app-localize-status-change', async () => {
-      const spy = sinon.spy();
+      const spy = vi.fn();
       window.addEventListener('app-localize-status-change', spy);
-      expect(spy.notCalled).to.be.true;
+      expect(spy).not.toHaveBeenCalled();
 
       intl.setLang('es');
 
-      expect(spy.calledOnce).to.be.true;
+      expect(spy).toHaveBeenCalledTimes(1);
       window.removeEventListener('app-localize-status-change', spy);
       intl.setLang('en');
     });
 
     it('updating formats fires app-localize-status-change', async () => {
-      const spy = sinon.spy();
+      const spy = vi.fn();
       window.addEventListener('app-localize-status-change', spy);
-      expect(spy.notCalled).to.be.true;
+      expect(spy).not.toHaveBeenCalled();
 
       const formatsObject = {
         number: {
@@ -115,7 +115,7 @@ describe('config methods', () => {
 
       intl.setFormats(formatsObject);
 
-      expect(spy.calledOnce).to.be.true;
+      expect(spy).toHaveBeenCalledTimes(1);
       window.removeEventListener('app-localize-status-change', spy);
     });
   });

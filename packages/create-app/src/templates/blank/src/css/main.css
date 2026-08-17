@@ -1,0 +1,95 @@
+@import url('https://fonts.googleapis.com/css2?family=Archivo:ital,wght@0,300;0,400;0,600;0,700;0,800&display=swap');
+@import url('./home.css');
+@import url('./second.css');
+
+:root {
+  --color-aqua:       #2DCCCD;
+  --color-blue-dark:  #043263;
+  --color-blue-light: #5BBEFF;
+  --color-blue:       #1973B8;
+  --color-core-blue:  #004481;
+  --color-core-light: #D4EDFC;
+  --color-grey-light: #f4f4f4;
+  --color-grey-mid:   #D9D9D9;
+  --color-grey:       #666666;
+  --color-navy:       #072146;
+  --color-red:        #D44B50;
+  --color-white:      #FFFFFF;
+}
+
+*, *::before, *::after { box-sizing: border-box; }
+
+html, body {
+  height: 100%;
+  margin: 0;
+  font-family: 'Archivo', sans-serif;
+  background: var(--color-white);
+  color: var(--color-blue-dark);
+  -webkit-font-smoothing: antialiased;
+}
+
+.badge {
+  display: inline-block;
+  padding: 0.375rem 0.5rem;
+  border-radius: 2px;
+  background: var(--color-core-blue);
+  font-size: 0.875rem;
+  line-height: 1rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--color-white);
+}
+
+.badge.red  { background: var(--color-red); }
+.badge.aqua { background: var(--color-aqua); color: var(--color-navy); }
+.badge.blue { background: var(--color-blue); }
+
+.link-arrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.375rem;
+  color: var(--color-blue);
+  font-size: 1rem;
+  font-weight: 500;
+  font-family: inherit;
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+}
+
+.link-arrow:hover { color: var(--color-core-blue); }
+.link-arrow::after { content: '\2192'; }
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  width: fit-content;
+  padding: 0.75rem 1.5rem;
+  border: 2px solid var(--color-core-blue);
+  border-radius: 2px;
+  background: var(--color-core-blue);
+  color: var(--color-white);
+  font-family: inherit;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.15s ease, border-color 0.15s ease;
+}
+
+.btn:hover {
+  background: var(--color-navy);
+  border-color: var(--color-navy);
+}
+
+.btn-outline {
+  background: transparent;
+  color: var(--color-core-blue);
+}
+
+.btn-outline:hover {
+  background: var(--color-core-light);
+  border-color: var(--color-core-blue);
+  color: var(--color-core-blue);
+}

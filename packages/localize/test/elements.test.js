@@ -15,9 +15,9 @@
  */
 
 /* eslint-disable max-classes-per-file */
-import { fixture, html, expect, fixtureCleanup } from '@open-wc/testing';
-import { LitElement, html as litHtml } from 'lit';
-import sinon from 'sinon';
+import { afterEach, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
+import { LitElement, html } from 'lit';
+import { fixture, fixtureCleanup } from './test-helpers.js';
 import * as intl from '../index.js';
 
 const { t, intlState, updateWhenLocaleResourcesChange } = intl;
@@ -33,7 +33,7 @@ class BaseTestElement extends LitElement {
   }
 
   render() {
-    return litHtml`
+    return html`
     <p>${t('simple-key')}</p>
   `;
   }
@@ -46,7 +46,7 @@ describe('elements using t', () => {
   let resources;
   let lang;
 
-  before(async () => {
+  beforeAll(async () => {
     intl.resetIntl();
     intl.setLocalesHost('./test');
     intl.requestResources();
@@ -71,7 +71,7 @@ describe('elements using t', () => {
 
     it('t method translates according to language', () => {
       const translation = el.getText(0);
-      expect(translation).to.be.equal(resources[lang]['simple-key']);
+      expect(translation).toBe(resources[lang]['simple-key']);
     });
   });
 
@@ -81,19 +81,19 @@ describe('elements using t', () => {
     });
 
     it('multiple elements only request resources once', async () => {
-      const spy = sinon.spy();
+      const spy = vi.fn();
       window.addEventListener('app-localize-resources-loaded', spy);
-      expect(spy.notCalled).to.be.true;
+      expect(spy).not.toHaveBeenCalled();
 
       el = await fixture(html` <elements-test-element></elements-test-element> `);
       await el.updateComplete;
       await intlState.resourcesLoadComplete;
-      expect(spy.calledOnce).to.be.true;
+      expect(spy).toHaveBeenCalledTimes(1);
 
       el = await fixture(html` <elements-test-element></elements-test-element> `);
       await el.updateComplete;
       await intlState.resourcesLoadComplete;
-      expect(spy.calledOnce).to.be.true;
+      expect(spy).toHaveBeenCalledTimes(1);
 
       window.removeEventListener('app-localize-resources-loaded', spy);
     });

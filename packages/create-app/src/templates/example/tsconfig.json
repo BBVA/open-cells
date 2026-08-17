@@ -23,7 +23,7 @@
     "outDir": "./types",
     "allowSyntheticDefaultImports": true,
     "forceConsistentCasingInFileNames": true,
-    "isolatedModules": true,
+    "isolatedModules": true
   },
   "include": ["src/**/*"]
 }
