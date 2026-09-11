@@ -41,6 +41,6 @@
     "@vitest/runner": "^4.1.9",
     "tsx": "^4.19.0",
     "typescript": "^6.0.0-beta",
-    "vitest": "^4.1.9"
+    "vitest": "^4.1.11"
   }
 }
