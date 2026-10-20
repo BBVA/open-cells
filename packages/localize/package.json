@@ -36,7 +36,7 @@
     "lit": "^3.1.2",
     "playwright": "^1.61.1",
     "sinon": "^21.0.1",
-    "vite": "^7.3.1",
+    "vite": "^7.3.7",
     "vitest": "^4.0.18"
   },
   "publishConfig": {
